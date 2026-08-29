@@ -1,0 +1,4 @@
+# Invictto Motors - Netlify Static Redirects & Routing Rules
+/adm    /adm/index.html    200
+/adm/   /adm/index.html    200
+

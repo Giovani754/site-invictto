@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Executivo | INVICTTO MOTORS</title>
+  <link rel="icon" href="../brasao.png.png" type="image/png">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'gold': '#B8973E',
+            'goldLight': '#D8B46C',
+            'goldDark': '#9E7E36',
+          },
+          fontFamily: {
+            'serif': ['Cinzel', 'serif'],
+            'sans': ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Supabase JS SDK CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script>
+    // Guard de Autenticação Imediato (Bloqueia renderização sem sessão)
+    (async function() {
+      if (typeof getAuthenticatedUser === 'function') {
+        const user = await getAuthenticatedUser();
+        if (!user) {
+          window.location.href = "login.html";
+        }
+      }
+    })();
+  </script>
+</head>
+<body class="bg-[#080808] text-gray-100 font-sans min-h-screen flex flex-col lg:flex-row antialiased overflow-x-hidden">
+
+  <!-- Toast Notification -->
+  <div id="toastNotification" class="fixed top-5 right-5 z-50 transform translate-y-[-100px] opacity-0 transition-all duration-300 pointer-events-none">
+    <div id="toastContent" class="px-5 py-3.5 rounded-xl text-xs font-semibold shadow-2xl flex items-center gap-3 border bg-white/10 backdrop-blur-md border-white/20 text-white">
+      <span id="toastIcon"></span>
+      <span id="toastMessage"></span>
+    </div>
+  </div>
+
+  <!-- Mobile Top Header -->
+  <header class="lg:hidden bg-[#0d0d0d] border-b border-white/10 p-4 flex items-center justify-between sticky top-0 z-30">
+    <a href="#" onclick="switchView('dashboard')" class="flex items-center gap-3">
+      <img src="../brasao.png.png" alt="Brasão Invictto" class="h-8 w-auto">
+      <img src="../texto-logo.png.png" alt="Invictto Motors" class="h-5 w-auto mt-0.5">
+    </a>
+    <button id="mobileMenuToggle" class="p-2 rounded-lg bg-white/5 border border-white/10 text-gray-300 hover:text-[#B8973E] focus:outline-none">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+    </button>
+  </header>
+
+  <!-- Mobile Backdrop Overlay -->
+  <div id="mobileOverlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity"></div>
+
+  <!-- Sidebar (Menu Lateral) -->
+  <aside id="sidebar" class="fixed top-0 bottom-0 left-0 z-50 w-72 bg-[#0d0d0d] border-r border-white/10 flex flex-col justify-between p-6 transform -translate-x-full lg:translate-x-0 lg:static transition-transform duration-300 ease-in-out">
+    
+    <div>
+      <!-- Brand Logo -->
+      <div class="flex items-center justify-between mb-8 pb-6 border-b border-white/10">
+        <a href="#" onclick="switchView('dashboard')" class="flex items-center gap-3">
+          <img src="../brasao.png.png" alt="Brasão Invictto" class="h-9 w-auto">
+          <div>
+            <img src="../texto-logo.png.png" alt="Invictto Motors" class="h-5 w-auto">
+            <span class="text-[10px] text-[#B8973E] font-semibold tracking-widest uppercase block mt-0.5">Painel ADM</span>
+          </div>
+        </a>
+        <button id="closeMobileMenu" class="lg:hidden text-gray-400 hover:text-white">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="space-y-2">
+        <button id="nav-dashboard" onclick="switchView('dashboard')" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all bg-[#B8973E]/10 border border-[#B8973E]/30 text-[#B8973E] shadow-sm">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+          Dashboard
+        </button>
+        
+        <button id="nav-veiculos" onclick="switchView('veiculos')" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-gray-400 hover:bg-white/5 hover:text-white transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0C2.678 5.57 2.25 6.05 2.25 6.618v.957m14.25 0H2.25"/></svg>
+          Veículos (Estoque)
+        </button>
+        
+        <button id="nav-equipe" onclick="switchView('equipe')" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-gray-400 hover:bg-white/5 hover:text-white transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6 0 3.375 3.375 0 016 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+          Equipe
+        </button>
+
+        <button id="nav-configuracoes" onclick="switchView('configuracoes')" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-gray-400 hover:bg-white/5 hover:text-white transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 011.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.894.149c-.424.07-.764.383-.929.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 01-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.398.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527a1.125 1.125 0 01-1.449-.12l-.774-.774a1.125 1.125 0 01-.12-1.45l.527-.737c.25-.35.273-.806.108-1.204-.165-.397-.506-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.108-1.204l-.526-.738a1.125 1.125 0 01.12-1.45l.773-.773a1.125 1.125 0 011.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.149-.894z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Configurações / Perfil
+        </button>
+      </nav>
+    </div>
+
+    <!-- Sidebar Footer -->
+    <div class="pt-6 border-t border-white/10 space-y-3">
+      <div class="p-3 bg-white/5 rounded-xl border border-white/10 flex items-center gap-3 mb-2">
+        <div class="w-8 h-8 rounded-full bg-[#B8973E]/20 flex items-center justify-center text-[#B8973E] font-bold text-xs">
+          ADM
+        </div>
+        <div class="overflow-hidden">
+          <p id="userEmailText" class="text-xs font-semibold text-white truncate">Administrador</p>
+          <span class="text-[10px] text-green-400 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span> Sessão Ativa
+          </span>
+        </div>
+      </div>
+
+      <a href="../index.html" target="_blank" rel="noopener" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium text-gray-300 hover:bg-white/5 hover:text-white transition-all">
+        <span class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-[#B8973E]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+          Ver site público
+        </span>
+        <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+      </a>
+
+      <!-- Botão Sair do Painel -->
+      <button onclick="handleLogout()" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold text-red-400 hover:bg-red-500/10 transition-all cursor-pointer">
+        <span class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
+          Sair do Painel
+        </span>
+      </button>
+    </div>
+
+  </aside>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full">
+    
+    <!-- VIEW 1: DASHBOARD -->
+    <div id="view-dashboard" class="space-y-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10">
+        <div>
+          <span class="text-[#B8973E] text-xs font-semibold tracking-[0.25em] uppercase block mb-1">Visão Geral</span>
+          <h1 class="font-serif text-2xl sm:text-3xl font-bold text-white">Dashboard Estratégico</h1>
+          <p class="text-gray-400 text-xs sm:text-sm mt-1">Gestão executiva de estoque e operações Invictto Motors.</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button onclick="openModalNovoVeiculo()" class="px-5 py-3 bg-[#B8973E] text-black font-bold uppercase text-xs tracking-wider rounded-xl hover:bg-[#d8b46c] transition-all shadow-lg shadow-[#B8973E]/20 flex items-center gap-2 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+            Novo Veículo
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 hover:border-[#B8973E]/30 transition-all">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total em Estoque</span>
+            <div class="w-10 h-10 rounded-xl bg-[#B8973E]/10 flex items-center justify-center text-[#B8973E]">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0C2.678 5.57 2.25 6.05 2.25 6.618v.957m14.25 0H2.25"/></svg>
+            </div>
+          </div>
+          <p id="metricTotalVeiculos" class="text-3xl font-bold text-white mb-1">0</p>
+          <p class="text-xs text-gray-400">Veículos no catálogo live</p>
+        </div>
+
+        <div class="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 hover:border-[#B8973E]/30 transition-all">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Status da Loja</span>
+            <div class="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-400">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+          </div>
+          <p class="text-xl font-bold text-green-400 mb-1">Ativo / Online</p>
+          <p class="text-xs text-gray-400">Jardim Anália Franco</p>
+        </div>
+
+        <div class="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 hover:border-[#B8973E]/30 transition-all">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Canal WhatsApp</span>
+            <div class="w-10 h-10 rounded-xl bg-[#B8973E]/10 flex items-center justify-center text-[#B8973E]">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"/></svg>
+            </div>
+          </div>
+          <p class="text-xl sm:text-2xl font-bold text-white mb-1">(11) 2606-2515</p>
+          <p class="text-xs text-gray-400">Atendimento Oficial</p>
+        </div>
+
+        <div class="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 hover:border-[#B8973E]/30 transition-all">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Equipe &amp; Supabase</span>
+            <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 5.625c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"/></svg>
+            </div>
+          </div>
+          <p class="text-xl font-bold text-white mb-1">Persistência Real</p>
+          <p class="text-xs text-green-400 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-green-400"></span> Tabela `equipe` Ativa</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6">
+          <h3 class="font-serif text-lg font-bold text-white mb-2 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-[#B8973E]"></span>
+            Gestão Avançada de Mídias &amp; Opcionais
+          </h3>
+          <p class="text-gray-400 text-xs leading-relaxed mb-6">Carregue fotos em lote, escolha a foto de capa e insira descrições/opcionais detalhados para exibir no site.</p>
+          <div class="flex flex-wrap gap-3">
+            <button onclick="switchView('veiculos')" class="px-4 py-2.5 bg-white/10 hover:bg-white/20 border border-white/15 text-white rounded-xl text-xs font-semibold transition-all">
+              Ver Estoque Completo
+            </button>
+            <button onclick="openModalNovoVeiculo()" class="px-4 py-2.5 bg-[#B8973E] text-black rounded-xl text-xs font-bold transition-all hover:bg-[#d8b46c]">
+              + Cadastrar Veículo
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6">
+          <h3 class="font-serif text-lg font-bold text-white mb-2 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-green-400"></span>
+            Autonomia de Senhas &amp; Equipe
+          </h3>
+          <p class="text-gray-400 text-xs leading-relaxed mb-6">Cadastre acessos para a equipe, redefina senhas de membros e altere suas credenciais com segurança total.</p>
+          <div class="flex flex-wrap gap-3">
+            <button onclick="switchView('configuracoes')" class="px-4 py-2.5 bg-white/10 hover:bg-white/20 border border-white/15 text-white rounded-xl text-xs font-semibold transition-all">
+              Minha Conta &amp; Senha
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 2: VEÍCULOS (ESTOQUE) -->
+    <div id="view-veiculos" class="space-y-6 hidden">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10">
+        <div>
+          <span class="text-[#B8973E] text-xs font-semibold tracking-[0.25em] uppercase block mb-1">Catálogo &amp; Showroom</span>
+          <h1 class="font-serif text-2xl sm:text-3xl font-bold text-white">Gestão de Veículos</h1>
+          <p class="text-gray-400 text-xs sm:text-sm mt-1">Gerencie mídias em lote, descrições/opcionais e status dos automóveis.</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button onclick="openModalNovoVeiculo()" class="w-full sm:w-auto px-5 py-3 bg-[#B8973E] text-black font-bold uppercase text-xs tracking-wider rounded-xl hover:bg-[#d8b46c] transition-all shadow-lg shadow-[#B8973E]/20 flex items-center justify-center gap-2 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+            Novo Veículo
+          </button>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-4">
+        <div class="relative w-full sm:w-72">
+          <input type="text" id="inputSearchVeiculo" oninput="filterVeiculosTable()" placeholder="Buscar por marca ou modelo..."
+                 class="w-full pl-10 pr-4 py-2.5 bg-black/50 border border-white/15 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#B8973E] focus:ring-1 focus:ring-[#B8973E] transition-all">
+          <svg class="w-4 h-4 text-gray-500 absolute left-3.5 top-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+        </div>
+
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <span class="text-xs text-gray-400 whitespace-nowrap">Filtrar Status:</span>
+          <select id="selectFilterStatus" onchange="filterVeiculosTable()"
+                  class="bg-black/50 border border-white/15 text-xs text-white rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#B8973E] transition-all cursor-pointer">
+            <option value="todos">Todos</option>
+            <option value="Disponível">Disponível</option>
+            <option value="Reservado">Reservado</option>
+            <option value="Vendido">Vendido</option>
+            <option value="Encomendado">Encomendado</option>
+            <option value="Cancelado">Cancelado</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-black/40 border-b border-white/10 text-gray-400 uppercase tracking-wider font-semibold">
+                <th class="py-4 px-5">Foto Capa</th>
+                <th class="py-4 px-5">Marca / Modelo</th>
+                <th class="py-4 px-5">Ano</th>
+                <th class="py-4 px-5">Quilometragem</th>
+                <th class="py-4 px-5">Preço</th>
+                <th class="py-4 px-5">Status Dinâmico</th>
+                <th class="py-4 px-5 text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="veiculosTableBody" class="divide-y divide-white/5 text-gray-300">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div id="emptyTableState" class="hidden p-12 text-center">
+          <div class="w-16 h-16 rounded-2xl bg-[#B8973E]/10 flex items-center justify-center text-[#B8973E] mx-auto mb-4">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0C2.678 5.57 2.25 6.05 2.25 6.618v.957m14.25 0H2.25"/></svg>
+          </div>
+          <h4 class="font-serif text-lg font-bold text-white mb-2">Nenhum veículo encontrado</h4>
+          <p class="text-gray-400 text-xs max-w-sm mx-auto mb-6">Comece cadastrando um novo automóvel no catálogo para exibi-lo aos clientes.</p>
+          <button onclick="openModalNovoVeiculo()" class="px-5 py-3 bg-[#B8973E] text-black font-bold uppercase text-xs rounded-xl hover:bg-[#d8b46c] transition-all">
+            + Cadastrar Primeiro Veículo
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 3: EQUIPE -->
+    <div id="view-equipe" class="space-y-6 hidden">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10">
+        <div>
+          <span class="text-[#B8973E] text-xs font-semibold tracking-[0.25em] uppercase block mb-1">Corpo Executivo</span>
+          <h1 class="font-serif text-2xl sm:text-3xl font-bold text-white">Equipe Invictto Motors</h1>
+          <p class="text-gray-400 text-xs sm:text-sm mt-1">Gerencie consultores e permissões de acesso ao painel ADM.</p>
+        </div>
+
+        <button onclick="openModalNovoEquipe()" class="w-full sm:w-auto px-5 py-3 bg-[#B8973E] text-black font-bold uppercase text-xs tracking-wider rounded-xl hover:bg-[#d8b46c] transition-all shadow-lg shadow-[#B8973E]/20 flex items-center justify-center gap-2 cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+          Novo Membro
+        </button>
+      </div>
+
+      <div id="equipeCardsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+
+    <!-- VIEW 4: CONFIGURAÇÕES / PERFIL -->
+    <div id="view-configuracoes" class="space-y-6 hidden">
+      <div class="pb-6 border-b border-white/10">
+        <span class="text-[#B8973E] text-xs font-semibold tracking-[0.25em] uppercase block mb-1">Segurança de Acesso</span>
+        <h1 class="font-serif text-2xl sm:text-3xl font-bold text-white">Configurações da Minha Conta</h1>
+        <p class="text-gray-400 text-xs sm:text-sm mt-1">Gerencie suas credenciais de login e altere sua senha de forma autônoma e segura.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Profile Card -->
+        <div class="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 h-fit">
+          <div class="w-20 h-20 rounded-2xl bg-[#B8973E]/20 text-[#B8973E] font-serif font-bold text-3xl flex items-center justify-center mx-auto mb-4 border border-[#B8973E]/30">
+            <span id="configUserInitial">A</span>
+          </div>
+          <h3 id="configUserName" class="font-serif text-xl font-bold text-white text-center mb-1">Usuário Autenticado</h3>
+          <p class="text-[#B8973E] text-xs font-semibold text-center mb-4">Acesso Administrativo Ativo</p>
+
+          <div class="space-y-3 pt-4 border-t border-white/10 text-xs">
+            <div>
+              <span class="text-gray-500 block text-[10px] uppercase font-semibold">E-mail Atual:</span>
+              <span id="configCurrentEmail" class="text-white font-medium truncate block">admin@invicttomotors.com.br</span>
+            </div>
+            <div>
+              <span class="text-gray-500 block text-[10px] uppercase font-semibold">Sessão Supabase Auth:</span>
+              <span class="text-green-400 font-semibold flex items-center gap-1.5 mt-0.5">
+                <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span> Autenticado &amp; Seguro
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Update Credentials -->
+        <div class="md:col-span-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 sm:p-8">
+          <h3 class="font-serif text-lg font-bold text-white mb-2">Alterar Minhas Credenciais</h3>
+          <p class="text-gray-400 text-xs leading-relaxed mb-6">Altere seu e-mail de acesso ou redefina sua senha pessoal. Qualquer usuário logado pode atualizar suas próprias credenciais sem dependência externa.</p>
+
+          <form id="formConfigCredentials" onsubmit="handleUpdateAccountCredentials(event)" class="space-y-5">
+            <div>
+              <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Novo E-mail de Login</label>
+              <input type="email" id="configEmailInput" placeholder="seu-email@invicttomotors.com.br"
+                     class="w-full px-4 py-3 bg-black/50 border border-white/15 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#B8973E] transition-all">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Nova Senha</label>
+                <input type="password" id="configPasswordInput" placeholder="••••••••••••"
+                       class="w-full px-4 py-3 bg-black/50 border border-white/15 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#B8973E] transition-all">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">Confirmar Nova Senha</label>
+                <input type="password" id="configConfirmPasswordInput" placeholder="••••••••••••"
+                       class="w-full px-4 py-3 bg-black/50 border border-white/15 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#B8973E] transition-all">
+              </div>
+            </div>
+
+            <div class="pt-2 flex justify-end">
+              <button type="submit" id="btnUpdateCredentials" class="px-6 py-3.5 bg-[#B8973E] hover:bg-[#d8b46c] text-black font-bold uppercase text-xs tracking-wider rounded-xl transition-all shadow-lg shadow-[#B8973E]/20 flex items-center gap-2 cursor-pointer">
+                <span>Salvar Novas Credenciais</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL: CADASTRAR / EDITAR VEÍCULO (MÚLTIPLAS FOTOS + CAPA + DESCRIÇÃO) -->
+  <div id="veiculoModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden transition-all">
+    <div class="bg-[#0d0d0d] border border-white/15 shadow-2xl rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 relative">
+      
+      <button onclick="closeModalVeiculo()" class="absolute top-5 right-5 text-gray-400 hover:text-white transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <div class="mb-6">
+        <span class="text-[#B8973E] text-[10px] font-bold tracking-[0.25em] uppercase block mb-1">Gestão de Estoque</span>
+        <h2 id="veiculoModalTitle" class="font-serif text-xl sm:text-2xl font-bold text-white">Novo Veículo</h2>
+        <p class="text-gray-400 text-xs mt-1">Adicione fotos em lote, selecione a capa e informe a descrição/opcionais do carro.</p>
+      </div>
+
+      <form id="formVeiculo" onsubmit="handleSalvarVeiculo(event)" class="space-y-4">
+        <input type="hidden" id="fieldVeiculoId" value="">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Marca *</label>
+            <input type="text" id="fieldMarca" required placeholder="Ex: Porsche, BMW, Mercedes"
+                   class="w-full px-4 py-3 bg-black/50 border border-white/15 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#B8973E] transition-all">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Modelo *</label>
+            <input type="text" id="fieldModelo" required placeholder="Ex: 911 Carrera S"
+                   class="w-full px-4 py-3 bg-black/50 border border-white/15 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#B8973E] transition-all">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Ano *</label>
+            <input type="text" id="fieldAno" required placeholder="Ex: 2023"
+                   class="w-full px-4 py-3 bg-black/50 border border-white/15 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#B8973E] transition-all">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Preço (R$) *</label>
+            <input type="number" id="fieldPreco" required placeholder="Ex: 890000" step="1000"
+                   class="w-full px-4 py-3 bg-black/50 border border-white/15 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#B8973E] transition-all">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">KM *</label>
+            <input type="number" id="fieldKm" required placeholder="Ex: 12500"
+                   class="w-full px-4 py-3 bg-black/50 border border-white/15 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#B8973E] transition-all">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Status *</label>
+          <select id="fieldStatus" required
+                  class="w-full px-4 py-3 bg-black/50 border border-white/15 rounded-xl text-xs text-white focus:outline-none focus:border-[#B8973E] transition-all cursor-pointer">
+            <option value="Disponível" selected>🟢 Disponível</option>
+            <option value="Reservado">🟡 Reservado</option>
+            <option value="Vendido">🔴 Vendido</option>
+            <option value="Encomendado">🔵 Encomendado</option>
+            <option value="Cancelado">⚫ Cancelado</option>
+          </select>
+        </div>
+
+        <!-- Campo de Descrição & Opcionais -->
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Descrição / Opcionais do Veículo</label>
+          <textarea id="fieldDescricao" rows="3" placeholder="Insira dados de procedência, pacotes de opcionais, blindagem ou destaques do carro..."
+                    class="w-full px-4 py-3 bg-black/50 border border-white/15 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#B8973E] transition-all"></textarea>
+        </div>
+
+        <!-- Componente Avançado de Fotos (Upload Múltiplo, Grid & Capa) -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider">Galeria de Fotos &amp; Capa</label>
+            <span class="text-[11px] text-[#B8973E]">Selecione a foto principal (Capa)</span>
+          </div>
+
+          <div class="relative border-2 border-dashed border-white/20 hover:border-[#B8973E] rounded-2xl p-4 text-center transition-all bg-black/30 group mb-4">
+            <input type="file" id="fieldFotoFiles" accept="image/*" multiple onchange="handleMultipleFileSelection(event)"
+                   class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+            
+            <div class="flex items-center justify-center gap-3">
+              <svg class="w-6 h-6 text-[#B8973E] group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+              <div class="text-left">
+                <p class="text-xs font-semibold text-white">Clique para selecionar várias fotos de uma vez</p>
+                <p class="text-[11px] text-gray-400">Upload automático em lote para <code class="text-[#B8973E]">veiculos-fotos</code></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Thumbnail Grid Preview -->
+          <div id="fotosThumbnailGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-3 max-h-56 overflow-y-auto p-1 bg-black/40 rounded-xl border border-white/10">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+
+        <div class="pt-4 flex items-center gap-3 justify-end border-t border-white/10">
+          <button type="button" onclick="closeModalVeiculo()" class="px-5 py-3 bg-white/10 hover:bg-white/20 text-gray-300 font-semibold text-xs rounded-xl transition-all">
+            Cancelar
+          </button>
+          <button type="submit" id="btnSalvarVeiculo" class="px-6 py-3 bg-[#B8973E] hover:bg-[#d8b46c] text-black font-bold uppercase text-xs tracking-wider rounded-xl transition-all shadow-lg shadow-[#B8973E]/20 flex items-center gap-2 cursor-pointer">
+            <span>Salvar Veículo</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CADASTRAR / EDITAR EQUIPE -->
+  <div id="equipeModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden transition-all">
+    <div class="bg-[#0d0d0d] border border-white/15 shadow-2xl rounded-2xl w-full max-w-lg p-6 sm:p-8 relative">
+      <button onclick="closeModalEquipe()" class="absolute top-5 right-5 text-gray-400 hover:text-white transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <div class="mb-6">
+        <span class="text-[#B8973E] text-[10px] font-bold tracking-[0.25em] uppercase block mb-1">Gestão de Equipe</span>
+        <h2 id="equipeModalTitle" class="font-serif text-xl sm:text-2xl font-bold text-white">Novo Membro</h2>
+        <p class="text-gray-400 text-xs mt-1">Informe os dados e configure permissões e senhas de acesso ao painel.</p>
+      </div>
+
+      <form id="formEquipe" onsubmit="handleSalvarEquipe(event)" class="space-y-4">
+        <input type="hidden" id="fieldEquipeId" value="">
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Nome *</label>
+          <input type="text" id="fieldEquipeNome" required placeholder="Ex: Conrado"
+                 class="w-full px-4 py-3 bg-black/50 border border-white/15 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#B8973E] transition-all">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Cargo / Função *</label>
+          <input type="text" id="fieldEquipeCargo" required placeholder="Ex: Consultor de Vendas Premium"
+                 class="w-full px-4 py-3 bg-black/50 border border-white/15 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#B8973E] transition-all">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Descrição Curta *</label>
+          <textarea id="fieldEquipeDescricao" rows="2" required placeholder="Ex: Especialista em veículos esportivos de alta performance."
+                    class="w-full px-4 py-3 bg-black/50 border border-white/15 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#B8973E] transition-all"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Telefone / WhatsApp *</label>
+          <input type="text" id="fieldEquipeWhatsapp" required placeholder="Ex: (11) 2606-2515"
+                 class="w-full px-4 py-3 bg-black/50 border border-white/15 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#B8973E] transition-all">
+        </div>
+
+        <!-- Permissões de Acesso ao ADM & Senha -->
+        <div class="pt-2 border-t border-white/10">
+          <label class="flex items-center gap-3 cursor-pointer select-none">
+            <input type="checkbox" id="fieldEquipeTemAcesso" onchange="toggleEquipeAdmFields(this.checked)"
+                   class="w-4 h-4 text-[#B8973E] bg-black border-white/20 rounded focus:ring-[#B8973E] focus:ring-offset-0 cursor-pointer">
+            <span class="text-xs font-semibold text-white">Conceder Acesso ao Painel ADM</span>
+          </label>
+
+          <div id="equipeAdmFields" class="hidden mt-3 space-y-3 bg-black/40 p-3.5 rounded-xl border border-white/10">
+            <div>
+              <label class="block text-[11px] font-semibold text-gray-400 uppercase mb-1">E-mail de Login ADM *</label>
+              <input type="email" id="fieldEquipeEmailAdm" placeholder="funcionario@invicttomotors.com.br"
+                     class="w-full px-3 py-2 bg-black/60 border border-white/15 rounded-lg text-xs text-white focus:outline-none focus:border-[#B8973E]">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-gray-400 uppercase mb-1">Nova Senha ADM (Criar/Redefinir)</label>
+              <input type="password" id="fieldEquipeSenhaAdm" placeholder="•••••••••••• (preencha para registrar/alterar senha)"
+                     class="w-full px-3 py-2 bg-black/60 border border-white/15 rounded-lg text-xs text-white focus:outline-none focus:border-[#B8973E]">
+              <span class="text-[10px] text-gray-500 mt-1 block">Permite ao administrador redefinir a senha do funcionário no Supabase Auth.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-4 flex items-center gap-3 justify-end">
+          <button type="button" onclick="closeModalEquipe()" class="px-5 py-3 bg-white/10 hover:bg-white/20 text-gray-300 font-semibold text-xs rounded-xl transition-all">
+            Cancelar
+          </button>
+          <button type="submit" id="btnSalvarEquipe" class="px-6 py-3 bg-[#B8973E] hover:bg-[#d8b46c] text-black font-bold uppercase text-xs tracking-wider rounded-xl transition-all shadow-lg shadow-[#B8973E]/20 flex items-center gap-2 cursor-pointer">
+            <span>Salvar Membro</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Javascript Logic -->
+  <script>
+    let listaVeiculos = [];
+    let listaEquipe = [];
+
+    let fotosModalVeiculo = [];
+    let arquivosNovosParaUpload = [];
+
+    const veiculosIniciaisFallback = [
+      { id: 'f1', marca: 'Porsche', modelo: '911 Carrera S', ano: '2023 / 2023', preco: 980000, km: 4200, status: 'Disponível', foto_url: 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=600&q=80' },
+      { id: 'f2', marca: 'BMW', modelo: 'M3 Competition 3.0', ano: '2022 / 2023', preco: 749000, km: 8900, status: 'Disponível', foto_url: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=600&q=80' },
+      { id: 'f3', marca: 'Mercedes-AMG', modelo: 'G63 V8 Biturbo', ano: '2021 / 2021', preco: 1650000, km: 15400, status: 'Reservado', foto_url: 'https://images.unsplash.com/photo-1520050206274-a1ae44613e6d?auto=format&fit=crop&w=600&q=80' },
+      { id: 'f4', marca: 'Audi', modelo: 'RS6 Avant 4.0 V8', ano: '2023 / 2024', preco: 1120000, km: 2100, status: 'Disponível', foto_url: 'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?auto=format&fit=crop&w=600&q=80' },
+      { id: 'f5', marca: 'Land Rover', modelo: 'Defender 110 HSE', ano: '2023 / 2023', preco: 689000, km: 11200, status: 'Disponível', foto_url: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80' },
+      { id: 'f6', marca: 'Porsche', modelo: 'Taycan Turbo S', ano: '2022 / 2022', preco: 890000, km: 6800, status: 'Vendido', foto_url: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=600&q=80' }
+    ];
+
+    const equipeInicialFallback = [
+      { id: 'e1', nome: 'Conrado', cargo: 'Consultor de Vendas Premium', descricao: 'Especialista em veículos esportivos de alta performance e blindados NIII-A.', whatsapp: '(11) 2606-2515', acesso_adm: true, email_adm: 'conrado@invicttomotors.com.br' },
+      { id: 'e2', nome: 'Gerência Comercial', cargo: 'Gestão de Negócios & Troca', descricao: 'Responsável pelas superavaliações na troca e facilitação financeira.', whatsapp: '(11) 2606-2515', acesso_adm: false },
+      { id: 'e3', nome: 'Concierge & Entregas', cargo: 'Logística VIP Brasil', descricao: 'Coordenação da documentação, laudos cautelares e transporte nacional.', whatsapp: '(11) 2606-2515', acesso_adm: false }
+    ];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (typeof requireAuth === 'function') {
+        const user = await requireAuth();
+        if (user && user.email) {
+          const emailDisplay = document.getElementById('userEmailText');
+          const configEmailDisplay = document.getElementById('configCurrentEmail');
+          const configInput = document.getElementById('configEmailInput');
+          const configUserName = document.getElementById('configUserName');
+          const configUserInitial = document.getElementById('configUserInitial');
+
+          if (emailDisplay) emailDisplay.textContent = user.email;
+          if (configEmailDisplay) configEmailDisplay.textContent = user.email;
+          if (configInput) configInput.value = user.email;
+
+          const username = user.email.split('@')[0];
+          const formattedName = username.charAt(0).toUpperCase() + username.slice(1);
+          if (configUserName) configUserName.textContent = formattedName;
+          if (configUserInitial) configUserInitial.textContent = username.charAt(0).toUpperCase();
+        }
+      }
+
+      const toggleBtn = document.getElementById('mobileMenuToggle');
+      const closeBtn = document.getElementById('closeMobileMenu');
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('mobileOverlay');
+
+      if (toggleBtn) toggleBtn.addEventListener('click', () => { sidebar.classList.remove('-translate-x-full'); overlay.classList.remove('hidden'); });
+      if (closeBtn) closeBtn.addEventListener('click', () => { sidebar.classList.add('-translate-x-full'); overlay.classList.add('hidden'); });
+      if (overlay) overlay.addEventListener('click', () => { sidebar.classList.add('-translate-x-full'); overlay.classList.add('hidden'); });
+
+      await carregarVeiculos();
+      await carregarEquipe();
+    });
+
+    function switchView(viewName) {
+      const views = ['dashboard', 'veiculos', 'equipe', 'configuracoes'];
+      views.forEach(v => {
+        const viewEl = document.getElementById(`view-${v}`);
+        const navEl = document.getElementById(`nav-${v}`);
+        if (viewEl) viewEl.classList.add('hidden');
+        if (navEl) {
+          navEl.classList.remove('bg-[#B8973E]/10', 'border', 'border-[#B8973E]/30', 'text-[#B8973E]', 'shadow-sm');
+          navEl.classList.add('text-gray-400');
+        }
+      });
+
+      const activeView = document.getElementById(`view-${viewName}`);
+      const activeNav = document.getElementById(`nav-${viewName}`);
+      if (activeView) activeView.classList.remove('hidden');
+      if (activeNav) {
+        activeNav.classList.remove('text-gray-400');
+        activeNav.classList.add('bg-[#B8973E]/10', 'border', 'border-[#B8973E]/30', 'text-[#B8973E]', 'shadow-sm');
+      }
+
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('mobileOverlay');
+      if (sidebar) sidebar.classList.add('-translate-x-full');
+      if (overlay) overlay.classList.add('hidden');
+    }
+
+    // ═══════════════════════════════════════════
+    // VEÍCULOS & MÚLTIPLAS FOTOS & DESCRIÇÃO
+    // ═══════════════════════════════════════════
+    async function carregarVeiculos() {
+      try {
+        let data = await fetchVeiculos();
+        if (!data || data.length === 0) {
+          listaVeiculos = [...veiculosIniciaisFallback];
+        } else {
+          listaVeiculos = data;
+        }
+
+        const metricEl = document.getElementById('metricTotalVeiculos');
+        if (metricEl) metricEl.textContent = listaVeiculos.length;
+
+        renderTabelaVeiculos(listaVeiculos);
+      } catch (err) {
+        console.error("Erro ao carregar veículos:", err);
+        listaVeiculos = [...veiculosIniciaisFallback];
+        renderTabelaVeiculos(listaVeiculos);
+      }
+    }
+
+    function renderTabelaVeiculos(items) {
+      const tbody = document.getElementById('veiculosTableBody');
+      const emptyState = document.getElementById('emptyTableState');
+
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      if (!items || items.length === 0) {
+        if (emptyState) emptyState.classList.remove('hidden');
+        return;
+      }
+      if (emptyState) emptyState.classList.add('hidden');
+
+      items.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-white/5 transition-colors border-b border-white/5';
+
+        const foto = item.foto_url || item.foto || (item.fotos_urls && item.fotos_urls[0]) || 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=600&q=80';
+        const precoFormatado = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(item.preco || 0);
+        const kmFormatado = Number(item.km || 0).toLocaleString('pt-BR') + ' km';
+
+        tr.innerHTML = `
+          <td class="py-3 px-5">
+            <div class="relative w-14 h-10 group">
+              <img src="${foto}" alt="${item.modelo}" class="w-full h-full object-cover rounded-lg border border-white/10 shadow-sm">
+              <span class="absolute -top-1 -right-1 bg-[#B8973E] text-black text-[9px] font-bold px-1 rounded shadow">CAPA</span>
+            </div>
+          </td>
+          <td class="py-3 px-5 font-semibold text-white">
+            <span class="text-gray-400 block text-[11px] uppercase">${item.marca}</span>
+            <span class="font-serif text-sm">${item.modelo}</span>
+          </td>
+          <td class="py-3 px-5 text-gray-300">${item.ano || '-'}</td>
+          <td class="py-3 px-5 text-gray-300 font-mono">${kmFormatado}</td>
+          <td class="py-3 px-5 text-[#B8973E] font-bold text-sm">${precoFormatado}</td>
+          <td class="py-3 px-5">
+            <select onchange="handleQuickStatusChange('${item.id}', this.value)"
+                    class="bg-black/60 border border-white/20 text-xs text-white rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-[#B8973E] cursor-pointer">
+              <option value="Disponível" ${item.status === 'Disponível' ? 'selected' : ''}>🟢 Disponível</option>
+              <option value="Reservado" ${item.status === 'Reservado' ? 'selected' : ''}>🟡 Reservado</option>
+              <option value="Vendido" ${item.status === 'Vendido' ? 'selected' : ''}>🔴 Vendido</option>
+              <option value="Encomendado" ${item.status === 'Encomendado' ? 'selected' : ''}>🔵 Encomendado</option>
+              <option value="Cancelado" ${item.status === 'Cancelado' ? 'selected' : ''}>⚫ Cancelado</option>
+            </select>
+          </td>
+          <td class="py-3 px-5 text-right space-x-1">
+            <button onclick="openModalEditarVeiculo('${item.id}')" class="p-2 text-[#B8973E] hover:bg-[#B8973E]/10 rounded-lg transition-all" title="Editar Veículo">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+            </button>
+            <button onclick="handleExcluirVeiculo('${item.id}', '${item.modelo}')" class="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-all" title="Excluir Veículo">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function handleQuickStatusChange(id, newStatus) {
+      try {
+        const item = listaVeiculos.find(v => v.id === id);
+        if (item) item.status = newStatus;
+
+        if (!id.startsWith('f')) {
+          await updateVeiculoStatus(id, newStatus);
+        }
+
+        showToast(`Status atualizado para: ${newStatus}`, "success");
+      } catch (err) {
+        console.error("Erro ao atualizar status:", err);
+        showToast("Erro ao alterar status no Supabase.", "error");
+      }
+    }
+
+    function filterVeiculosTable() {
+      const search = document.getElementById('inputSearchVeiculo').value.toLowerCase().trim();
+      const status = document.getElementById('selectFilterStatus').value;
+
+      const filtrados = listaVeiculos.filter(item => {
+        const matchesSearch = item.marca.toLowerCase().includes(search) || item.modelo.toLowerCase().includes(search);
+        const matchesStatus = status === 'todos' || item.status === status;
+        return matchesSearch && matchesStatus;
+      });
+
+      renderTabelaVeiculos(filtrados);
+    }
+
+    function openModalNovoVeiculo() {
+      document.getElementById('formVeiculo').reset();
+      document.getElementById('fieldVeiculoId').value = '';
+      document.getElementById('fieldDescricao').value = '';
+      document.getElementById('veiculoModalTitle').textContent = 'Novo Veículo';
+      
+      fotosModalVeiculo = [];
+      arquivosNovosParaUpload = [];
+      renderFotosPreviewGrid();
+
+      document.getElementById('veiculoModal').classList.remove('hidden');
+    }
+
+    function openModalEditarVeiculo(id) {
+      const item = listaVeiculos.find(v => v.id === id);
+      if (!item) return;
+
+      document.getElementById('fieldVeiculoId').value = item.id;
+      document.getElementById('fieldMarca').value = item.marca || '';
+      document.getElementById('fieldModelo').value = item.modelo || '';
+      document.getElementById('fieldAno').value = item.ano || '';
+      document.getElementById('fieldPreco').value = item.preco || '';
+      document.getElementById('fieldKm').value = item.km || '';
+      document.getElementById('fieldStatus').value = item.status || 'Disponível';
+      document.getElementById('fieldDescricao').value = item.descricao || item.opcionais || '';
+      document.getElementById('veiculoModalTitle').textContent = `Editar ${item.modelo}`;
+
+      fotosModalVeiculo = [];
+      arquivosNovosParaUpload = [];
+
+      const coverUrl = item.foto_url || item.foto;
+      const galeria = item.fotos_urls || (coverUrl ? [coverUrl] : []);
+
+      galeria.forEach(url => {
+        fotosModalVeiculo.push({
+          url: url,
+          isCover: url === coverUrl || fotosModalVeiculo.length === 0
+        });
+      });
+
+      if (fotosModalVeiculo.length > 0 && !fotosModalVeiculo.some(f => f.isCover)) {
+        fotosModalVeiculo[0].isCover = true;
+      }
+
+      renderFotosPreviewGrid();
+      document.getElementById('veiculoModal').classList.remove('hidden');
+    }
+
+    function closeModalVeiculo() {
+      document.getElementById('veiculoModal').classList.add('hidden');
+    }
+
+    function handleMultipleFileSelection(event) {
+      const files = Array.from(event.target.files);
+      if (!files || files.length === 0) return;
+
+      files.forEach(file => {
+        arquivosNovosParaUpload.push(file);
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const isFirst = fotosModalVeiculo.length === 0;
+          fotosModalVeiculo.push({
+            url: e.target.result,
+            file: file,
+            isCover: isFirst
+          });
+          renderFotosPreviewGrid();
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function setCoverFotoIndex(index) {
+      fotosModalVeiculo.forEach((f, i) => {
+        f.isCover = i === index;
+      });
+      renderFotosPreviewGrid();
+      showToast("Foto de capa selecionada!", "info");
+    }
+
+    function removeFotoFromGrid(index) {
+      const wasCover = fotosModalVeiculo[index].isCover;
+      fotosModalVeiculo.splice(index, 1);
+
+      if (wasCover && fotosModalVeiculo.length > 0) {
+        fotosModalVeiculo[0].isCover = true;
+      }
+      renderFotosPreviewGrid();
+    }
+
+    function renderFotosPreviewGrid() {
+      const grid = document.getElementById('fotosThumbnailGrid');
+      if (!grid) return;
+
+      grid.innerHTML = '';
+
+      if (fotosModalVeiculo.length === 0) {
+        grid.innerHTML = `<div class="col-span-full py-6 text-center text-gray-500 text-xs">Nenhuma foto selecionada ainda.</div>`;
+        return;
+      }
+
+      fotosModalVeiculo.forEach((fotoObj, i) => {
+        const div = document.createElement('div');
+        div.className = `relative rounded-xl overflow-hidden group border-2 ${fotoObj.isCover ? 'border-[#B8973E] ring-2 ring-[#B8973E]/30' : 'border-white/10'}`;
+
+        div.innerHTML = `
+          <img src="${fotoObj.url}" alt="Foto ${i+1}" class="w-full h-24 object-cover">
+          
+          ${fotoObj.isCover ? `<span class="absolute top-1 left-1 bg-[#B8973E] text-black text-[9px] font-bold px-1.5 py-0.5 rounded shadow">CAPA</span>` : ''}
+
+          <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-1">
+            ${!fotoObj.isCover ? `
+              <button type="button" onclick="setCoverFotoIndex(${i})" class="px-2 py-1 bg-[#B8973E] text-black font-bold text-[10px] rounded hover:bg-[#d8b46c] transition-all" title="Definir como foto de capa">
+                Capa
+              </button>
+            ` : ''}
+            <button type="button" onclick="removeFotoFromGrid(${i})" class="p-1 bg-red-500/80 text-white rounded hover:bg-red-600 transition-all" title="Excluir esta foto">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+        `;
+        grid.appendChild(div);
+      });
+    }
+
+    async function handleSalvarVeiculo(event) {
+      event.preventDefault();
+      const btn = document.getElementById('btnSalvarVeiculo');
+      btn.disabled = true;
+      btn.innerHTML = `<svg class="w-4 h-4 animate-spin text-black" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Processando...`;
+
+      try {
+        const id = document.getElementById('fieldVeiculoId').value;
+        const marca = document.getElementById('fieldMarca').value.trim();
+        const modelo = document.getElementById('fieldModelo').value.trim();
+        const ano = document.getElementById('fieldAno').value.trim();
+        const preco = parseFloat(document.getElementById('fieldPreco').value) || 0;
+        const km = parseInt(document.getElementById('fieldKm').value) || 0;
+        const status = document.getElementById('fieldStatus').value;
+        const descricao = document.getElementById('fieldDescricao').value.trim();
+
+        if (arquivosNovosParaUpload.length > 0) {
+          showToast(`Enviando ${arquivosNovosParaUpload.length} foto(s) para o Supabase Storage...`, "info");
+          for (let i = 0; i < fotosModalVeiculo.length; i++) {
+            if (fotosModalVeiculo[i].file) {
+              const uploadedUrl = await uploadFotoVeiculo(fotosModalVeiculo[i].file);
+              if (uploadedUrl) {
+                fotosModalVeiculo[i].url = uploadedUrl;
+                delete fotosModalVeiculo[i].file;
+              }
+            }
+          }
+        }
+
+        const allUrls = fotosModalVeiculo.map(f => f.url);
+        const coverObj = fotosModalVeiculo.find(f => f.isCover) || fotosModalVeiculo[0];
+        const coverUrl = coverObj ? coverObj.url : 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=600&q=80';
+
+        const payload = {
+          marca,
+          modelo,
+          ano,
+          preco,
+          km,
+          status,
+          descricao,
+          foto_url: coverUrl,
+          fotos_urls: allUrls
+        };
+
+        if (id) {
+          const index = listaVeiculos.findIndex(v => v.id === id);
+          if (index !== -1) listaVeiculos[index] = { ...listaVeiculos[index], ...payload };
+          if (!id.startsWith('f')) await updateVeiculo(id, payload);
+          showToast("Veículo e descrição salvos com sucesso!", "success");
+        } else {
+          payload.created_at = new Date().toISOString();
+          try {
+            const inserted = await createVeiculo(payload);
+            if (inserted && inserted.length > 0) {
+              listaVeiculos.unshift(inserted[0]);
+            } else {
+              payload.id = Date.now().toString();
+              listaVeiculos.unshift(payload);
+            }
+          } catch (e) {
+            payload.id = Date.now().toString();
+            listaVeiculos.unshift(payload);
+          }
+          showToast("Novo veículo publicado no estoque!", "success");
+        }
+
+        renderTabelaVeiculos(listaVeiculos);
+        closeModalVeiculo();
+
+        const metricEl = document.getElementById('metricTotalVeiculos');
+        if (metricEl) metricEl.textContent = listaVeiculos.length;
+
+      } catch (err) {
+        console.error("Erro ao salvar veículo:", err);
+        showToast("Erro ao salvar veículo: " + err.message, "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Salvar Veículo</span>`;
+      }
+    }
+
+    async function handleExcluirVeiculo(id, modelo) {
+      if (!confirm(`Tem certeza que deseja excluir "${modelo}" do estoque?`)) return;
+
+      try {
+        if (!id.startsWith('f')) {
+          await deleteVeiculoById(id);
+        }
+
+        listaVeiculos = listaVeiculos.filter(v => v.id !== id);
+        renderTabelaVeiculos(listaVeiculos);
+        showToast(`Veículo "${modelo}" excluído com sucesso.`, "success");
+
+        const metricEl = document.getElementById('metricTotalVeiculos');
+        if (metricEl) metricEl.textContent = listaVeiculos.length;
+      } catch (err) {
+        console.error("Erro ao excluir veículo:", err);
+        showToast("Erro ao excluir veículo: " + err.message, "error");
+      }
+    }
+
+    // ═══════════════════════════════════════════
+    // EQUIPE & PERSISTÊNCIA REAL NO SUPABASE
+    // ═══════════════════════════════════════════
+    async function carregarEquipe() {
+      try {
+        let data = await fetchEquipe();
+        if (!data || data.length === 0) {
+          listaEquipe = [...equipeInicialFallback];
+        } else {
+          listaEquipe = data;
+        }
+        renderEquipeCards(listaEquipe);
+      } catch (err) {
+        console.error("Erro ao carregar equipe:", err);
+        listaEquipe = [...equipeInicialFallback];
+        renderEquipeCards(listaEquipe);
+      }
+    }
+
+    function renderEquipeCards(items) {
+      const container = document.getElementById('equipeCardsGrid');
+      if (!container) return;
+      container.innerHTML = '';
+
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 hover:border-[#B8973E]/30 transition-all flex flex-col justify-between';
+
+        const initial = (item.nome || 'E').charAt(0).toUpperCase();
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <div class="w-14 h-14 rounded-2xl bg-[#B8973E]/20 text-[#B8973E] font-serif font-bold text-xl flex items-center justify-center border border-[#B8973E]/30">
+                ${initial}
+              </div>
+              <div class="flex items-center gap-1">
+                <button onclick="openModalEditarEquipe('${item.id}')" class="p-2 text-[#B8973E] hover:bg-[#B8973E]/10 rounded-lg transition-all" title="Editar Membro &amp; Redefinir Senha">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                </button>
+                <button onclick="handleExcluirEquipe('${item.id}', '${item.nome}')" class="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-all" title="Excluir Membro">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+                </button>
+              </div>
+            </div>
+            
+            <div class="flex items-center gap-2 mb-1">
+              <h3 class="font-serif text-lg font-bold text-white">${item.nome}</h3>
+              ${item.acesso_adm ? `<span class="px-2 py-0.5 rounded-full text-[9px] font-semibold bg-[#B8973E]/20 text-[#B8973E] border border-[#B8973E]/40">🔐 ADM Ativo</span>` : ''}
+            </div>
+            
+            <p class="text-[#B8973E] text-xs font-semibold mb-3">${item.cargo}</p>
+            <p class="text-gray-400 text-xs leading-relaxed mb-4">${item.descricao}</p>
+          </div>
+
+          <div class="pt-4 border-t border-white/10 space-y-1.5 text-xs text-gray-400">
+            <div class="flex items-center justify-between">
+              <span>WhatsApp Direct:</span>
+              <span class="text-green-400 font-semibold">${item.whatsapp}</span>
+            </div>
+            ${item.email_adm ? `
+              <div class="flex items-center justify-between">
+                <span>E-mail ADM:</span>
+                <span class="text-gray-300 font-mono text-[11px] truncate max-w-[140px]">${item.email_adm}</span>
+              </div>
+            ` : ''}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function toggleEquipeAdmFields(checked) {
+      const container = document.getElementById('equipeAdmFields');
+      if (checked) {
+        container.classList.remove('hidden');
+      } else {
+        container.classList.add('hidden');
+      }
+    }
+
+    function openModalNovoEquipe() {
+      document.getElementById('formEquipe').reset();
+      document.getElementById('fieldEquipeId').value = '';
+      document.getElementById('fieldEquipeTemAcesso').checked = false;
+      document.getElementById('fieldEquipeSenhaAdm').value = '';
+      toggleEquipeAdmFields(false);
+      document.getElementById('equipeModalTitle').textContent = 'Novo Membro da Equipe';
+      document.getElementById('equipeModal').classList.remove('hidden');
+    }
+
+    function openModalEditarEquipe(id) {
+      const item = listaEquipe.find(e => e.id === id);
+      if (!item) return;
+
+      document.getElementById('fieldEquipeId').value = item.id;
+      document.getElementById('fieldEquipeNome').value = item.nome || '';
+      document.getElementById('fieldEquipeCargo').value = item.cargo || '';
+      document.getElementById('fieldEquipeDescricao').value = item.descricao || '';
+      document.getElementById('fieldEquipeWhatsapp').value = item.whatsapp || '';
+      document.getElementById('fieldEquipeSenhaAdm').value = '';
+
+      const temAcesso = !!item.acesso_adm;
+      document.getElementById('fieldEquipeTemAcesso').checked = temAcesso;
+      toggleEquipeAdmFields(temAcesso);
+      if (temAcesso) {
+        document.getElementById('fieldEquipeEmailAdm').value = item.email_adm || '';
+      }
+
+      document.getElementById('equipeModalTitle').textContent = `Editar ${item.nome}`;
+      document.getElementById('equipeModal').classList.remove('hidden');
+    }
+
+    function closeModalEquipe() {
+      document.getElementById('equipeModal').classList.add('hidden');
+    }
+
+    async function handleSalvarEquipe(event) {
+      event.preventDefault();
+      const btn = document.getElementById('btnSalvarEquipe');
+      btn.disabled = true;
+
+      try {
+        const id = document.getElementById('fieldEquipeId').value;
+        const nome = document.getElementById('fieldEquipeNome').value.trim();
+        const cargo = document.getElementById('fieldEquipeCargo').value.trim();
+        const descricao = document.getElementById('fieldEquipeDescricao').value.trim();
+        const whatsapp = document.getElementById('fieldEquipeWhatsapp').value.trim();
+        const acesso_adm = document.getElementById('fieldEquipeTemAcesso').checked;
+        const email_adm = acesso_adm ? document.getElementById('fieldEquipeEmailAdm').value.trim() : '';
+        const senha_adm = acesso_adm ? document.getElementById('fieldEquipeSenhaAdm').value.trim() : '';
+
+        const payload = { nome, cargo, descricao, whatsapp, acesso_adm, email_adm };
+
+        // Process Auth registration/password reset if password provided
+        if (acesso_adm && email_adm && senha_adm && typeof createAdminUserForTeamMember === 'function') {
+          try {
+            await createAdminUserForTeamMember(email_adm, senha_adm);
+            showToast(`Credenciais Supabase Auth registradas para ${email_adm}`, "info");
+          } catch (authErr) {
+            console.warn("Aviso ao registrar credenciais Auth:", authErr.message);
+          }
+        }
+
+        if (id) {
+          const index = listaEquipe.findIndex(e => e.id === id);
+          if (index !== -1) listaEquipe[index] = { ...listaEquipe[index], ...payload };
+          if (!id.startsWith('e')) await updateEquipeMembro(id, payload);
+          showToast(`Dados de ${nome} salvos no Supabase com sucesso!`, "success");
+        } else {
+          payload.created_at = new Date().toISOString();
+          try {
+            const inserted = await createEquipeMembro(payload);
+            if (inserted && inserted.length > 0) {
+              listaEquipe.unshift(inserted[0]);
+            } else {
+              payload.id = Date.now().toString();
+              listaEquipe.unshift(payload);
+            }
+          } catch (e) {
+            payload.id = Date.now().toString();
+            listaEquipe.unshift(payload);
+          }
+          showToast(`Novo membro ${nome} cadastrado com sucesso!`, "success");
+        }
+
+        renderEquipeCards(listaEquipe);
+        closeModalEquipe();
+      } catch (err) {
+        console.error("Erro ao salvar membro:", err);
+        showToast("Erro ao salvar membro no Supabase: " + err.message, "error");
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function handleExcluirEquipe(id, nome) {
+      if (!confirm(`Remover "${nome}" da equipe?`)) return;
+
+      try {
+        if (!id.startsWith('e')) {
+          await deleteEquipeMembroById(id);
+        }
+
+        listaEquipe = listaEquipe.filter(e => e.id !== id);
+        renderEquipeCards(listaEquipe);
+        showToast(`Membro "${nome}" removido do Supabase.`, "success");
+      } catch (err) {
+        console.error("Erro ao remover membro:", err);
+        showToast("Erro ao remover membro: " + err.message, "error");
+      }
+    }
+
+    // ═══════════════════════════════════════════
+    // CONFIGURAÇÕES DA MINHA CONTA (QUALQUER USUÁRIO)
+    // ═══════════════════════════════════════════
+    async function handleUpdateAccountCredentials(event) {
+      event.preventDefault();
+      const btn = document.getElementById('btnUpdateCredentials');
+      const email = document.getElementById('configEmailInput').value.trim();
+      const password = document.getElementById('configPasswordInput').value;
+      const confirmPassword = document.getElementById('configConfirmPasswordInput').value;
+
+      if (password && password !== confirmPassword) {
+        showToast("As senhas informadas não coincidem.", "error");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = `<svg class="w-4 h-4 animate-spin text-black" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Atualizando Credenciais...`;
+
+      try {
+        await updateUserCredentials({ email, password });
+        
+        showToast("Sua senha / e-mail foram atualizados com sucesso!", "success");
+        document.getElementById('configPasswordInput').value = '';
+        document.getElementById('configConfirmPasswordInput').value = '';
+
+        if (email) {
+          document.getElementById('userEmailText').textContent = email;
+          document.getElementById('configCurrentEmail').textContent = email;
+        }
+
+      } catch (err) {
+        console.error("Erro ao atualizar credenciais:", err);
+        showToast("Erro ao atualizar credenciais: " + err.message, "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Salvar Novas Credenciais</span>`;
+      }
+    }
+
+    // Toast Notification Helper
+    function showToast(msg, type) {
+      const toast = document.getElementById('toastNotification');
+      const toastMsg = document.getElementById('toastMessage');
+      const toastIcon = document.getElementById('toastIcon');
+
+      if (!toast || !toastMsg) return;
+
+      toastMsg.textContent = msg;
+      if (type === 'success') {
+        toastIcon.innerHTML = `<svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+      } else if (type === 'error') {
+        toastIcon.innerHTML = `<svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>`;
+      } else {
+        toastIcon.innerHTML = `<svg class="w-5 h-5 text-[#B8973E]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>`;
+      }
+
+      toast.classList.remove('translate-y-[-100px]', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-[-100px]', 'opacity-0');
+      }, 3500);
+    }
+  </script>
+</body>
+</html>

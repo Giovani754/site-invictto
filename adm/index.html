@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Redirecionando | INVICTTO MOTORS ADM</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+</head>
+<body style="background-color: #080808; color: #ffffff; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0;">
+  <div style="text-align: center;">
+    <p style="color: #B8973E; letter-spacing: 2px; text-transform: uppercase; font-size: 12px; margin-bottom: 8px;">Invictto Motors ADM</p>
+    <p style="color: #888888; font-size: 14px;">Carregando painel administrativo...</p>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (typeof getAuthenticatedUser === 'function') {
+        const user = await getAuthenticatedUser();
+        if (user) {
+          window.location.href = 'dashboard.html';
+        } else {
+          window.location.href = 'login.html';
+        }
+      } else {
+        window.location.href = 'login.html';
+      }
+    });
+  </script>
+</body>
+</html>
+
