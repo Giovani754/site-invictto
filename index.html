@@ -182,15 +182,47 @@
       box-shadow: 0 0 25px rgba(197, 160, 89, 0.5);
     }
 
-    /* Hero BG - Desktop */
+    /* Hero BG */
     .hero-bg {
       background: linear-gradient(135deg, rgba(8,8,8,0.88) 0%, rgba(8,8,8,0.65) 40%, rgba(8,8,8,0.2) 100%),
                   url('Imagem Hero site invictto (desktop).jpeg') center/cover no-repeat;
     }
+
+    /* Senna Parallax BG (Diferenciais + Serviços) */
+    .bg-senna-parallax {
+      background-image: url('background-senna.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+
+    /* Rossi Parallax BG (Avaliações) */
+    .bg-rossi-parallax {
+      background-image: url('background-rossi.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+
+    /* Mobile Responsive Background Optimizations */
     @media (max-width: 768px) {
       .hero-bg {
         background: linear-gradient(to top, rgba(8,8,8,0.95) 0%, rgba(8,8,8,0.7) 50%, rgba(8,8,8,0.4) 100%),
-                    url('Imagem Hero site invictto (mobile).jpg') 65% center/cover no-repeat;
+                    url('Imagem Hero site invictto (mobile).jpg') center/cover no-repeat;
+      }
+      .bg-senna-parallax {
+        background-image: url('background-senna-mobile.jpg');
+        background-attachment: scroll;
+        background-position: center;
+        background-size: cover;
+      }
+      .bg-rossi-parallax {
+        background-image: url('background-rossi-mobile.jpg');
+        background-attachment: scroll;
+        background-position: center;
+        background-size: cover;
       }
     }
 
@@ -482,7 +514,7 @@
   <!-- ═══════════════════════════════════════════
        CONTÊINER PARALLAX (DIFERENCIAIS + SERVIÇOS)
        ═══════════════════════════════════════════ -->
-  <div class="relative w-full bg-[url('background-senna.jpg')] bg-fixed bg-cover bg-center bg-no-repeat overflow-hidden">
+  <div class="relative w-full bg-senna-parallax overflow-hidden">
 
     <!-- Overlay escuro compartilhado -->
     <div class="absolute inset-0 bg-black/85 pointer-events-none"></div>
@@ -763,7 +795,7 @@
   <!-- ═══════════════════════════════════════════
        AVALIAÇÕES
        ═══════════════════════════════════════════ -->
-  <section id="avaliacoes" class="relative w-full py-24 lg:py-32 bg-[url('background-rossi.jpg')] bg-fixed bg-cover bg-center bg-no-repeat overflow-hidden">
+  <section id="avaliacoes" class="relative w-full py-24 lg:py-32 bg-rossi-parallax overflow-hidden">
 
     <!-- Overlay escuro -->
     <div class="absolute inset-0 bg-black/85"></div>
