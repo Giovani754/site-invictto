@@ -257,8 +257,11 @@
       animation: shimmer 4s linear infinite;
     }
 
-    /* Section divider */
-    .section-divider { width: 80px; height: 2px; background: linear-gradient(90deg, #D8B46C, #9E7E36); margin: 0 auto; }
+    /* Remove o selo da Netlify em planos gratuitos */
+    #netlify-badge, a[href*="netlify.com/support"], .netlify-badge, [class*="netlify-badge"] {
+      display: none !important;
+      visibility: hidden !important;
+    }
   </style>
 </head>
 
