@@ -1088,28 +1088,28 @@
     const no=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)navs.forEach(l=>{l.classList.toggle('active',l.getAttribute('href')==='#'+e.target.id);});});},{threshold:0.3,rootMargin:'-80px 0px 0px 0px'});
     secs.forEach(s=>no.observe(s));
 
-    // Reviews Database (20 Feedbacks)
+    // Reviews Database (20 Feedbacks reais)
     const reviewsList = [
-      { name: "Rafael S.", initials: "RS", text: "Atendimento impecável da equipe. Comprei minha BMW e o processo foi super transparente e rápido." },
-      { name: "Mariana L.", initials: "ML", text: "Excelente curadoria de veículos. Fui atendida por um dos consultores que entendeu perfeitamente o que eu buscava." },
-      { name: "Carlos M.", initials: "CM", text: "A loja física é espetacular. Transmite muita segurança. A negociação da minha Mercedes foi ágil e muito justa." },
-      { name: "Fernando A.", initials: "FA", text: "Profissionalismo do início ao fim. O Conrado e toda a equipe de consultores estão de parabéns." },
-      { name: "Juliana T.", initials: "JT", text: "Primeira vez que compro um carro premium com tanta tranquilidade. A vistoria cautelar me deu total segurança." },
-      { name: "Roberto C.", initials: "RC", text: "Fiquei impressionado com a qualidade do estoque. Todos os carros são vitrine. Parabéns aos vendedores." },
-      { name: "Eduardo B.", initials: "EB", text: "Vendi meu Porsche em consignação com eles. Processo super seguro e sem dor de cabeça, a equipe cuidou de tudo." },
-      { name: "Patrícia N.", initials: "PN", text: "O showroom no Anália Franco é incrível. Atendimento de altíssimo nível por toda a equipe comercial." },
-      { name: "Thiago V.", initials: "TV", text: "Recomendo de olhos fechados. Transparência na negociação, laudo 100% e carros em estado de zero." },
-      { name: "André F.", initials: "AF", text: "A assessoria documental deles é um grande diferencial. Não tive que me preocupar com nenhum papel." },
-      { name: "Marcos R.", initials: "MR", text: "Comprei um Defender e entregaram na minha casa. O serviço de concierge deles é real e funciona muito bem." },
-      { name: "Camila G.", initials: "CG", text: "A equipe é extremamente bem treinada. Conhecem absolutamente tudo sobre as especificações dos carros que vendem." },
-      { name: "Letícia O.", initials: "LO", text: "Estrutura fantástica e carros super exclusivos. Meu marido comprou uma RS6 e a experiência de entrega foi incrível." },
-      { name: "Diego M.", initials: "DM", text: "Gostei muito da discrição. Não te empurram o carro, eles realmente prestam uma consultoria para achar o modelo ideal." },
-      { name: "Ricardo P.", initials: "RP", text: "Fui muito bem recebido. Avaliaram meu seminovo com um preço justo na troca e o financiamento foi aprovado na hora." },
-      { name: "Vitor S.", initials: "VS", text: "Sem dúvidas a melhor loja premium de São Paulo. A qualidade da preparação estética que eles fazem nos carros é absurda." },
-      { name: "Amanda D.", initials: "AD", text: "Confiança é a palavra. Toda a documentação e histórico do carro foram apresentados antes mesmo de eu pedir." },
-      { name: "Leandro H.", initials: "LH", text: "O atendimento online foi rápido e o consultor tirou todas as minhas dúvidas com muita paciência e educação." },
-      { name: "Beatriz C.", initials: "BC", text: "Comprar na Invictto Motors foi uma experiência de luxo. Ambiente sofisticado e um time de vendas que sabe o que faz." },
-      { name: "Gustavo L.", initials: "GL", text: "Nota 10 para o time. Excelentes profissionais, loja com um design lindo e um pós-venda que realmente atende você." }
+      { name: "Marcio Dario", initials: "MD", text: "Excelente atendimento e uma equipe muito atenciosa. Fui muito bem recebido e tive uma ótima experiência durante a compra. A loja transmite confiança e oferece um serviço de qualidade. Com certeza voltarei novamente e recomendo a todos que procuram um carro com tranquilidade e bom atendimento." },
+      { name: "Jefferson Andrade", initials: "JA", text: "Excelente experiência! Fui muito bem atendido pela Thayna, que foi extremamente atenciosa, simpática, transparente e prestativa durante todo o processo. A loja has ótima estrutura e transmite bastante confiança." },
+      { name: "Gisele montoro", initials: "GM", text: "Excelente atendimento do início ao fim! É muito bom encontrar uma loja que trabalha com transparência, honestidade e dedicação." },
+      { name: "maria adelaide mattei", initials: "MM", text: "Acabei de adquirir meu novo carro com eles! Otimos preços, carros com alta qualidade, e sem dúvidas o que difere eles na venda, e a transparência e a atenção com o cliente! Com certeza indico!" },
+      { name: "Francisco Gabriel França", initials: "FF", text: "Fui muito bem atendido pela vendedora Sthefani, ela me explicou muito bem sobre o carro, o processo de compra. Foi super simpática comigo e com a minha esposa, espero voltar a fazer negócios com a Invictto" },
+      { name: "Alam Souza", initials: "AS", text: "Ambiente agradável, minha família foi muito bem recebida, conseguimos trocar nosso carro com um valor muito justo no nosso usado, com certeza voltaremos futuramente, excelente experiência" },
+      { name: "Adega Salomão", initials: "AS", text: "Parabéns a toda a equipe por oferecer um atendimento de excelência, com profissionalismo, respeito e compromisso com cada cliente. É muito bom encontrar uma loja que transmite segurança em todas as etapas da compra." },
+      { name: "Anjo", initials: "AN", text: "Me deram todo o suporte necessário, esclareceram todas as dúvidas. De confiança. Fechei negócio e nota 10." },
+      { name: "Caroline Sousa", initials: "CS", text: "Gostaria de registrar aqui minha satisfação em ter feito negócio com vocês ! Parabéns pelo trabalho e comprometimento" },
+      { name: "Haleff Arruda", initials: "HA", text: "A consultora Thayna me atendeu, foi super atenciosa, deixei meu fox e minha moto FZ25 para venda e ele vendeu muito rapido, a loja possui uma cartela bem ampla de clientes e com isso consegui trocar de carro." },
+      { name: "Sthefani Brito", initials: "SB", text: "Atendimento rápido, profissional e com negociação justa na intermediação do meu veículo." },
+      { name: "Thayna Arruda", initials: "TA", text: "Atendimento impecavel! Carros de qualidade e localização fácil!" },
+      { name: "Clinica Reggi", initials: "CR", text: "Exelentes em tudo, atendimento, recepção, vendas. super recomendo." },
+      { name: "Conrado De Miranda luppi", initials: "CL", text: "Muito top" },
+      { name: "Felipe Nicolosi", initials: "FN", text: "Excelente atendimento da vendedora Gabi! Merece muito reconhecimento!!!" },
+      { name: "Janaina Nascimento Dias", initials: "JD", text: "Realizei a venda do meu carro na Invictto e tive uma experiência excelente do início ao fim. Desde a primeira visita para avaliação do veículo, fui muito bem atendida e fiquei impressionada com todo o cuidado e profissionalismo da equipe." },
+      { name: "Mariana alpha", initials: "MA", text: "Atenciosos e confiáveis! Estava ansiosissima para comprar minha moto, fizemos toda negociação e pagamento on-line e vieram entregar aqui em casa, documentação tudo ok! Moto lindíssima e bem cuidada, atendimento impecável!" },
+      { name: "ricardo antunes", initials: "RA", text: "excelente atendimento prestado pela Gabi e pela Sthefani, carro em excelentes condições, já comprei em outras lojas e essa até o momento foi a melhor" },
+      { name: "Jader Reis", initials: "JR", text: "Saí de Santos para comprar meu carro na Invicttos e faria tudo de novo. Fui atendido pelo Conrado, que se colocou à disposição até fora do horário." },
+      { name: "Thais Talita Ferreira Rinco", initials: "TR", text: "Fui até a loja para ver alguns carros com meu filho e tivemos uma experiência excelente. Desde o primeiro atendimento fomos muito bem recebidos, com muita atenção." }
     ];
 
     function renderReviews(){
