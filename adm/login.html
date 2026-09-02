@@ -32,6 +32,9 @@
   </script>
   
   <!-- Supabase JS SDK CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+</head>
 <body class="bg-[#080808] text-gray-100 font-sans min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
 
   <!-- Ambient Glow -->
@@ -64,7 +67,7 @@
         <div>
           <label for="email" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">E-mail Corporativo</label>
           <div class="relative">
-            <input type="email" id="email" required placeholder="admin@invicttomotors.com.br"
+            <input type="email" id="email" required autocapitalize="none" placeholder="admin@invicttomotors.com.br"
                    class="w-full px-4 py-3.5 bg-black/50 border border-white/15 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#B8973E] focus:ring-1 focus:ring-[#B8973E] transition-all">
           </div>
         </div>
@@ -108,7 +111,7 @@
 
     async function handleLogin(event) {
       event.preventDefault();
-      const email = document.getElementById('email').value.trim();
+      const email = document.getElementById('email').value.trim().toLowerCase();
       const password = document.getElementById('password').value;
       const btn = document.getElementById('btnSubmit');
       const alertBox = document.getElementById('alertBox');
@@ -118,8 +121,8 @@
       btn.innerHTML = `<svg class="w-4 h-4 animate-spin text-black" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Validando...`;
 
       try {
-        if (!supabaseClient) {
-          throw new Error("Cliente Supabase não inicializado.");
+        if (typeof supabaseClient === 'undefined' || !supabaseClient) {
+          throw new Error("Falha ao carregar o sistema de login. Verifique sua conexão e recarregue a página");
         }
 
         const { data, error } = await supabaseClient.auth.signInWithPassword({
@@ -138,14 +141,31 @@
 
       } catch (err) {
         console.error("Erro no login:", err);
-        let msg = err.message || "Email ou senha inválidos.";
-        if (msg.includes("Invalid login credentials")) {
-          msg = "E-mail ou senha incorretos. Por favor, verifique suas credenciais.";
-        }
-        showAlert(msg, 'error');
+        showAlert(traduzErro(err), 'error');
         btn.disabled = false;
         btn.innerHTML = `<span>Acessar Painel</span><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>`;
       }
+    }
+
+    // Traduz erros do Supabase para português. Nunca expõe mensagem técnica ao usuário.
+    function traduzErro(err) {
+      const bruto = (err && err.message) ? err.message : '';
+
+      // Mensagem já em português definida por nós (ex.: SDK não carregou).
+      if (bruto.startsWith('Falha ao carregar o sistema de login')) return bruto;
+
+      const mapa = [
+        ['Invalid login credentials', 'E-mail ou senha incorretos. Verifique suas credenciais e tente novamente.'],
+        ['Email not confirmed', 'Este e-mail ainda não foi confirmado. Verifique sua caixa de entrada.'],
+        ['rate limit', 'Muitas tentativas seguidas. Aguarde alguns instantes antes de tentar de novo.'],
+        ['Failed to fetch', 'Não foi possível conectar ao servidor. Verifique sua conexão com a internet.']
+      ];
+
+      for (const [chave, texto] of mapa) {
+        if (bruto.toLowerCase().includes(chave.toLowerCase())) return texto;
+      }
+
+      return 'Não foi possível entrar. Tente novamente em instantes.';
     }
 
     function showAlert(message, type) {
