@@ -441,7 +441,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Ano *</label>
-            <input type="text" id="fieldAno" required placeholder="Ex: 2023"
+            <input type="text" id="fieldAno" required placeholder="2023 / 2024" oninput="maskAno(this)"
                    class="w-full px-4 py-3 bg-black/50 border border-white/15 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#B8973E] transition-all">
           </div>
           <div>
@@ -700,6 +700,12 @@
       return String(id).startsWith('f');
     }
 
+    // Formata o campo Ano como "AAAA / AAAA" (fabricação / modelo) enquanto digita.
+    function maskAno(input) {
+      const d = input.value.replace(/\D/g, '').slice(0, 8);
+      input.value = d.length > 4 ? `${d.slice(0, 4)} / ${d.slice(4)}` : d;
+    }
+
     function renderTabelaVeiculos(items) {
       const tbody = document.getElementById('veiculosTableBody');
       const emptyState = document.getElementById('emptyTableState');
@@ -931,6 +937,16 @@
         const modelo = document.getElementById('fieldModelo').value.trim();
         const versao = document.getElementById('fieldVersao').value.trim();
         const ano = document.getElementById('fieldAno').value.trim();
+
+        // return (e não throw): o catch abaixo reporta falha de gravação, e aqui
+        // nem chegamos a tentar gravar. O finally restaura o botão.
+        const anoMatch = ano.match(/^(\d{4})\s*\/\s*(\d{4})$/);
+        if (!anoMatch) {
+          showToast("Informe o ano no formato 2023 / 2024", "error");
+          return;
+        }
+        const anoFormatado = `${anoMatch[1]} / ${anoMatch[2]}`;
+
         const preco = parseFloat(document.getElementById('fieldPreco').value) || 0;
         const km = parseInt(document.getElementById('fieldKm').value) || 0;
         const status = document.getElementById('fieldStatus').value;
@@ -957,7 +973,7 @@
           marca,
           modelo,
           versao,
-          ano,
+          ano: anoFormatado,
           preco,
           km,
           status,
