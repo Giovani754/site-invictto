@@ -694,6 +694,12 @@
       }
     }
 
+    // Veículos de demonstração usam id string 'f1'..'f6'; os reais vêm do
+    // Supabase como BIGINT, que não tem startsWith.
+    function isVeiculoDemo(id) {
+      return String(id).startsWith('f');
+    }
+
     function renderTabelaVeiculos(items) {
       const tbody = document.getElementById('veiculosTableBody');
       const emptyState = document.getElementById('emptyTableState');
@@ -755,10 +761,10 @@
 
     async function handleQuickStatusChange(id, newStatus) {
       try {
-        const item = listaVeiculos.find(v => v.id === id);
+        const item = listaVeiculos.find(v => String(v.id) === String(id));
         if (item) item.status = newStatus;
 
-        if (!id.startsWith('f')) {
+        if (!isVeiculoDemo(id)) {
           await updateVeiculoStatus(id, newStatus);
         }
 
@@ -798,7 +804,7 @@
     }
 
     function openModalEditarVeiculo(id) {
-      const item = listaVeiculos.find(v => v.id === id);
+      const item = listaVeiculos.find(v => String(v.id) === String(id));
       if (!item) return;
 
       document.getElementById('fieldVeiculoId').value = item.id;
@@ -917,8 +923,10 @@
       btn.disabled = true;
       btn.innerHTML = `<svg class="w-4 h-4 animate-spin text-black" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Processando...`;
 
+      // Fora do try para que o catch saiba se era cadastro novo ou edição.
+      const id = document.getElementById('fieldVeiculoId').value;
+
       try {
-        const id = document.getElementById('fieldVeiculoId').value;
         const marca = document.getElementById('fieldMarca').value.trim();
         const modelo = document.getElementById('fieldModelo').value.trim();
         const versao = document.getElementById('fieldVersao').value.trim();
@@ -959,24 +967,22 @@
         };
 
         if (id) {
-          const index = listaVeiculos.findIndex(v => v.id === id);
+          // Grava no banco ANTES de tocar na memória: se falhar, a tabela não
+          // pode exibir uma alteração que o Supabase não recebeu.
+          if (!isVeiculoDemo(id)) await updateVeiculo(id, payload);
+
+          const index = listaVeiculos.findIndex(v => String(v.id) === String(id));
           if (index !== -1) listaVeiculos[index] = { ...listaVeiculos[index], ...payload };
-          if (!id.startsWith('f')) await updateVeiculo(id, payload);
           showToast("Veículo e descrição salvos com sucesso!", "success");
         } else {
           payload.created_at = new Date().toISOString();
-          try {
-            const inserted = await createVeiculo(payload);
-            if (inserted && inserted.length > 0) {
-              listaVeiculos.unshift(inserted[0]);
-            } else {
-              payload.id = Date.now().toString();
-              listaVeiculos.unshift(payload);
-            }
-          } catch (e) {
-            payload.id = Date.now().toString();
-            listaVeiculos.unshift(payload);
+
+          const inserted = await createVeiculo(payload);
+          if (!inserted || inserted.length === 0) {
+            throw new Error("createVeiculo não retornou o registro inserido.");
           }
+
+          listaVeiculos.unshift(inserted[0]);
           showToast("Novo veículo publicado no estoque!", "success");
         }
 
@@ -988,7 +994,14 @@
 
       } catch (err) {
         console.error("Erro ao salvar veículo:", err);
-        showToast("Erro ao salvar veículo: " + err.message, "error");
+        // Modal segue aberto (closeModalVeiculo fica após o bloco), para o
+        // usuário não perder o que digitou.
+        showToast(
+          id
+            ? "Não foi possível salvar no banco de dados. As alterações NÃO foram salvas."
+            : "Não foi possível salvar no banco de dados. O veículo NÃO foi cadastrado.",
+          "error"
+        );
       } finally {
         btn.disabled = false;
         btn.innerHTML = `<span>Salvar Veículo</span>`;
@@ -999,11 +1012,11 @@
       if (!confirm(`Tem certeza que deseja excluir "${modelo}" do estoque?`)) return;
 
       try {
-        if (!id.startsWith('f')) {
+        if (!isVeiculoDemo(id)) {
           await deleteVeiculoById(id);
         }
 
-        listaVeiculos = listaVeiculos.filter(v => v.id !== id);
+        listaVeiculos = listaVeiculos.filter(v => String(v.id) !== String(id));
         renderTabelaVeiculos(listaVeiculos);
         showToast(`Veículo "${modelo}" excluído com sucesso.`, "success");
 
