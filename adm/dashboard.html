@@ -1047,6 +1047,12 @@
       }
     }
 
+    // Membros de demonstração usam id string 'e1'..'e3'; os reais vêm do
+    // Supabase como BIGINT, que não tem startsWith.
+    function isEquipeDemo(id) {
+      return String(id).startsWith('e');
+    }
+
     function renderEquipeCards(items) {
       const container = document.getElementById('equipeCardsGrid');
       if (!container) return;
@@ -1120,7 +1126,7 @@
     }
 
     function openModalEditarEquipe(id) {
-      const item = listaEquipe.find(e => e.id === id);
+      const item = listaEquipe.find(e => String(e.id) === String(id));
       if (!item) return;
 
       document.getElementById('fieldEquipeId').value = item.id;
@@ -1150,8 +1156,10 @@
       const btn = document.getElementById('btnSalvarEquipe');
       btn.disabled = true;
 
+      // Fora do try para que o catch saiba se era cadastro novo ou edição.
+      const id = document.getElementById('fieldEquipeId').value;
+
       try {
-        const id = document.getElementById('fieldEquipeId').value;
         const nome = document.getElementById('fieldEquipeNome').value.trim();
         const cargo = document.getElementById('fieldEquipeCargo').value.trim();
         const descricao = document.getElementById('fieldEquipeDescricao').value.trim();
@@ -1173,24 +1181,22 @@
         }
 
         if (id) {
-          const index = listaEquipe.findIndex(e => e.id === id);
+          // Grava no banco ANTES de tocar na memória: se falhar, os cards não
+          // podem exibir uma alteração que o Supabase não recebeu.
+          if (!isEquipeDemo(id)) await updateEquipeMembro(id, payload);
+
+          const index = listaEquipe.findIndex(e => String(e.id) === String(id));
           if (index !== -1) listaEquipe[index] = { ...listaEquipe[index], ...payload };
-          if (!id.startsWith('e')) await updateEquipeMembro(id, payload);
           showToast(`Dados de ${nome} salvos no Supabase com sucesso!`, "success");
         } else {
           payload.created_at = new Date().toISOString();
-          try {
-            const inserted = await createEquipeMembro(payload);
-            if (inserted && inserted.length > 0) {
-              listaEquipe.unshift(inserted[0]);
-            } else {
-              payload.id = Date.now().toString();
-              listaEquipe.unshift(payload);
-            }
-          } catch (e) {
-            payload.id = Date.now().toString();
-            listaEquipe.unshift(payload);
+
+          const inserted = await createEquipeMembro(payload);
+          if (!inserted || inserted.length === 0) {
+            throw new Error("createEquipeMembro não retornou o registro inserido.");
           }
+
+          listaEquipe.unshift(inserted[0]);
           showToast(`Novo membro ${nome} cadastrado com sucesso!`, "success");
         }
 
@@ -1198,7 +1204,14 @@
         closeModalEquipe();
       } catch (err) {
         console.error("Erro ao salvar membro:", err);
-        showToast("Erro ao salvar membro no Supabase: " + err.message, "error");
+        // Modal segue aberto (closeModalEquipe fica após o bloco), para o
+        // usuário não perder o que digitou.
+        showToast(
+          id
+            ? "Não foi possível salvar no banco de dados. As alterações NÃO foram salvas."
+            : "Não foi possível salvar no banco de dados. O membro NÃO foi cadastrado.",
+          "error"
+        );
       } finally {
         btn.disabled = false;
       }
@@ -1208,11 +1221,11 @@
       if (!confirm(`Remover "${nome}" da equipe?`)) return;
 
       try {
-        if (!id.startsWith('e')) {
+        if (!isEquipeDemo(id)) {
           await deleteEquipeMembroById(id);
         }
 
-        listaEquipe = listaEquipe.filter(e => e.id !== id);
+        listaEquipe = listaEquipe.filter(e => String(e.id) !== String(id));
         renderEquipeCards(listaEquipe);
         showToast(`Membro "${nome}" removido do Supabase.`, "success");
       } catch (err) {
