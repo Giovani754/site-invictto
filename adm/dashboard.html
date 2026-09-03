@@ -1189,6 +1189,8 @@
         // Grava o membro ANTES de mexer no Auth: se o acesso falhar, o cadastro
         // já existe e a pessoa reclama no mesmo dia — melhor que um login
         // órfão que ninguém sabe que existe.
+        let idNovoMembro = null;
+
         if (id) {
           if (!isEquipeDemo(id)) await updateEquipeMembro(id, payload);
 
@@ -1202,6 +1204,7 @@
             throw new Error("createEquipeMembro não retornou o registro inserido.");
           }
 
+          idNovoMembro = inserted[0] && inserted[0].id;
           listaEquipe.unshift(inserted[0]);
         }
 
@@ -1225,12 +1228,17 @@
               // Login não foi criado: corrige o registro para o card não
               // exibir "ADM Ativo" mentindo. Na edição (id truthy) o login
               // já existia antes, então acesso_adm não muda.
-              const correcao = { acesso_adm: false, email_adm: '' };
-              try {
-                await updateEquipeMembro(listaEquipe[0].id, correcao);
-                Object.assign(listaEquipe[0], correcao);
-              } catch (fixErr) {
-                console.error("Erro ao corrigir acesso_adm após falha de Auth:", fixErr);
+              if (idNovoMembro == null) {
+                console.error("Não foi possível corrigir acesso_adm: insert não retornou id.");
+              } else {
+                const correcao = { acesso_adm: false, email_adm: '' };
+                try {
+                  await updateEquipeMembro(idNovoMembro, correcao);
+                  const membro = listaEquipe.find(e => String(e.id) === String(idNovoMembro));
+                  if (membro) Object.assign(membro, correcao);
+                } catch (fixErr) {
+                  console.error("Erro ao corrigir acesso_adm após falha de Auth:", fixErr);
+                }
               }
             }
             showToast(`${mensagemBase} Porém o acesso ao painel NÃO foi criado: ${authErr.message}`, "error");
