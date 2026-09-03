@@ -66,17 +66,38 @@ async function updateUserCredentials({ email, password }) {
   return data;
 }
 
+// Chama a Edge Function "gerenciar-usuarios" (valida sessão no servidor,
+// diferente de auth.signUp que qualquer um pode chamar).
+async function invocarGerenciarUsuarios(acao, email, senha) {
+  if (!supabaseClient) throw new Error("Supabase não inicializado.");
+
+  const { data, error } = await supabaseClient.functions.invoke("gerenciar-usuarios", {
+    body: { acao, email: email.trim(), senha: senha.trim() }
+  });
+
+  if (error) {
+    // FunctionsHttpError não traz a mensagem do corpo em error.message;
+    // ela vem em error.context. Sem isso todo erro vira texto genérico.
+    let detalhe = error.message;
+    try {
+      const corpo = await error.context.json();
+      if (corpo && corpo.error) detalhe = corpo.error;
+    } catch (e) {}
+    throw new Error(detalhe);
+  }
+
+  if (data && data.error) throw new Error(data.error);
+  return data;
+}
+
 async function createAdminUserForTeamMember(email, password) {
   if (!supabaseClient || !email || !password) return null;
-  const { data, error } = await supabaseClient.auth.signUp({
-    email: email.trim(),
-    password: password.trim()
-  });
-  if (error) {
-    console.warn("Aviso ao registrar usuário Supabase Auth:", error.message);
-    throw error;
-  }
-  return data;
+  return await invocarGerenciarUsuarios("criar", email, password);
+}
+
+async function redefinirSenhaMembro(email, novaSenha) {
+  if (!supabaseClient || !email || !novaSenha) return null;
+  return await invocarGerenciarUsuarios("redefinir_senha", email, novaSenha);
 }
 
 // Vehicle Database & Storage Helpers

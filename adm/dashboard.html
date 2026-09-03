@@ -1186,24 +1186,14 @@
 
         const payload = { nome, cargo, descricao, whatsapp, acesso_adm, email_adm };
 
-        // Process Auth registration/password reset if password provided
-        if (acesso_adm && email_adm && senha_adm && typeof createAdminUserForTeamMember === 'function') {
-          try {
-            await createAdminUserForTeamMember(email_adm, senha_adm);
-            showToast(`Credenciais Supabase Auth registradas para ${email_adm}`, "info");
-          } catch (authErr) {
-            console.warn("Aviso ao registrar credenciais Auth:", authErr.message);
-          }
-        }
-
+        // Grava o membro ANTES de mexer no Auth: se o acesso falhar, o cadastro
+        // já existe e a pessoa reclama no mesmo dia — melhor que um login
+        // órfão que ninguém sabe que existe.
         if (id) {
-          // Grava no banco ANTES de tocar na memória: se falhar, os cards não
-          // podem exibir uma alteração que o Supabase não recebeu.
           if (!isEquipeDemo(id)) await updateEquipeMembro(id, payload);
 
           const index = listaEquipe.findIndex(e => String(e.id) === String(id));
           if (index !== -1) listaEquipe[index] = { ...listaEquipe[index], ...payload };
-          showToast(`Dados de ${nome} salvos no Supabase com sucesso!`, "success");
         } else {
           payload.created_at = new Date().toISOString();
 
@@ -1213,7 +1203,28 @@
           }
 
           listaEquipe.unshift(inserted[0]);
-          showToast(`Novo membro ${nome} cadastrado com sucesso!`, "success");
+        }
+
+        // Membro já está salvo. Erro de acesso daqui pra frente não desfaz o
+        // cadastro — só avisa que o acesso ao painel não foi criado.
+        const mensagemBase = id
+          ? `Dados de ${nome} salvos no Supabase com sucesso!`
+          : `Novo membro ${nome} cadastrado com sucesso!`;
+
+        if (acesso_adm && email_adm && senha_adm) {
+          try {
+            if (id) {
+              await redefinirSenhaMembro(email_adm, senha_adm);
+            } else {
+              await createAdminUserForTeamMember(email_adm, senha_adm);
+            }
+            showToast(`${mensagemBase} Credenciais de acesso ao painel atualizadas.`, "success");
+          } catch (authErr) {
+            console.error("Erro nas credenciais de acesso:", authErr);
+            showToast(`${mensagemBase} Porém o acesso ao painel NÃO foi criado: ${authErr.message}`, "error");
+          }
+        } else {
+          showToast(mensagemBase, "success");
         }
 
         renderEquipeCards(listaEquipe);
