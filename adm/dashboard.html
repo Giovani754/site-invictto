@@ -1221,6 +1221,18 @@
             showToast(`${mensagemBase} Credenciais de acesso ao painel atualizadas.`, "success");
           } catch (authErr) {
             console.error("Erro nas credenciais de acesso:", authErr);
+            if (!id) {
+              // Login não foi criado: corrige o registro para o card não
+              // exibir "ADM Ativo" mentindo. Na edição (id truthy) o login
+              // já existia antes, então acesso_adm não muda.
+              const correcao = { acesso_adm: false, email_adm: '' };
+              try {
+                await updateEquipeMembro(listaEquipe[0].id, correcao);
+                Object.assign(listaEquipe[0], correcao);
+              } catch (fixErr) {
+                console.error("Erro ao corrigir acesso_adm após falha de Auth:", fixErr);
+              }
+            }
             showToast(`${mensagemBase} Porém o acesso ao painel NÃO foi criado: ${authErr.message}`, "error");
           }
         } else {
@@ -1320,7 +1332,7 @@
       toast.classList.remove('translate-y-[-100px]', 'opacity-0');
       setTimeout(() => {
         toast.classList.add('translate-y-[-100px]', 'opacity-0');
-      }, 3500);
+      }, type === 'error' ? 10000 : 3500);
     }
   </script>
 </body>
