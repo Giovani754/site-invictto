@@ -456,6 +456,33 @@
           </div>
         </div>
 
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Câmbio *</label>
+            <select id="fieldCambio" required
+                    class="w-full px-4 py-3 bg-black/50 border border-white/15 rounded-xl text-xs text-white focus:outline-none focus:border-[#B8973E] transition-all cursor-pointer">
+              <option value="">Selecione</option>
+              <option value="Manual">Manual</option>
+              <option value="Automático">Automático</option>
+              <option value="Automatizado">Automatizado</option>
+              <option value="CVT">CVT</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Combustível *</label>
+            <select id="fieldCombustivel" required
+                    class="w-full px-4 py-3 bg-black/50 border border-white/15 rounded-xl text-xs text-white focus:outline-none focus:border-[#B8973E] transition-all cursor-pointer">
+              <option value="">Selecione</option>
+              <option value="Flex">Flex</option>
+              <option value="Gasolina">Gasolina</option>
+              <option value="Álcool">Álcool</option>
+              <option value="Diesel">Diesel</option>
+              <option value="Híbrido">Híbrido</option>
+              <option value="Elétrico">Elétrico</option>
+            </select>
+          </div>
+        </div>
+
         <div>
           <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Status *</label>
           <select id="fieldStatus" required
@@ -597,12 +624,12 @@
     let arquivosNovosParaUpload = [];
 
     const veiculosIniciaisFallback = [
-      { id: 'f1', marca: 'Porsche', modelo: '911 Carrera S', versao: 'Carrera S 3.0 Biturbo PDK', ano: '2023 / 2023', preco: 980000, km: 4200, status: 'Disponível', foto_url: 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=600&q=80' },
-      { id: 'f2', marca: 'BMW', modelo: 'M3 Competition 3.0', versao: 'Competition M xDrive', ano: '2022 / 2023', preco: 749000, km: 8900, status: 'Disponível', foto_url: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=600&q=80' },
-      { id: 'f3', marca: 'Mercedes-AMG', modelo: 'G63 V8 Biturbo', versao: 'AMG 4.0 V8 Biturbo 585cv', ano: '2021 / 2021', preco: 1650000, km: 15400, status: 'Reservado', foto_url: 'https://images.unsplash.com/photo-1520050206274-a1ae44613e6d?auto=format&fit=crop&w=600&q=80' },
-      { id: 'f4', marca: 'Audi', modelo: 'RS6 Avant 4.0 V8', versao: 'Avant Performance 4.0 V8 quattro', ano: '2023 / 2024', preco: 1120000, km: 2100, status: 'Disponível', foto_url: 'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?auto=format&fit=crop&w=600&q=80' },
-      { id: 'f5', marca: 'Land Rover', modelo: 'Defender 110 HSE', versao: '110 HSE D300 3.0 Diesel', ano: '2023 / 2023', preco: 689000, km: 11200, status: 'Disponível', foto_url: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80' },
-      { id: 'f6', marca: 'Porsche', modelo: 'Taycan Turbo S', versao: 'Turbo S Performance Plus 761cv', ano: '2022 / 2022', preco: 890000, km: 6800, status: 'Vendido', foto_url: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=600&q=80' }
+      { id: 'f1', marca: 'Porsche', modelo: '911 Carrera S', versao: 'Carrera S 3.0 Biturbo PDK', cambio: 'Automatizado', combustivel: 'Gasolina', ano: '2023 / 2023', preco: 980000, km: 4200, status: 'Disponível', foto_url: 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=600&q=80' },
+      { id: 'f2', marca: 'BMW', modelo: 'M3 Competition 3.0', versao: 'Competition M xDrive', cambio: 'Automático', combustivel: 'Gasolina', ano: '2022 / 2023', preco: 749000, km: 8900, status: 'Disponível', foto_url: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=600&q=80' },
+      { id: 'f3', marca: 'Mercedes-AMG', modelo: 'G63 V8 Biturbo', versao: 'AMG 4.0 V8 Biturbo 585cv', cambio: 'Automático', combustivel: 'Gasolina', ano: '2021 / 2021', preco: 1650000, km: 15400, status: 'Reservado', foto_url: 'https://images.unsplash.com/photo-1520050206274-a1ae44613e6d?auto=format&fit=crop&w=600&q=80' },
+      { id: 'f4', marca: 'Audi', modelo: 'RS6 Avant 4.0 V8', versao: 'Avant Performance 4.0 V8 quattro', cambio: 'Automático', combustivel: 'Gasolina', ano: '2023 / 2024', preco: 1120000, km: 2100, status: 'Disponível', foto_url: 'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?auto=format&fit=crop&w=600&q=80' },
+      { id: 'f5', marca: 'Land Rover', modelo: 'Defender 110 HSE', versao: '110 HSE D300 3.0 Diesel', cambio: 'Automático', combustivel: 'Diesel', ano: '2023 / 2023', preco: 689000, km: 11200, status: 'Disponível', foto_url: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80' },
+      { id: 'f6', marca: 'Porsche', modelo: 'Taycan Turbo S', versao: 'Turbo S Performance Plus 761cv', cambio: 'Automático', combustivel: 'Elétrico', ano: '2022 / 2022', preco: 890000, km: 6800, status: 'Vendido', foto_url: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=600&q=80' }
     ];
 
     const equipeInicialFallback = [
@@ -738,6 +765,7 @@
             <span class="text-gray-400 block text-[11px] uppercase">${item.marca}</span>
             <span class="font-serif text-sm">${item.modelo}</span>
             ${item.versao ? `<span class="block text-[11px] text-gray-400 font-normal">${item.versao}</span>` : ''}
+            ${(item.cambio || item.combustivel) ? `<span class="block text-[10px] text-gray-500 font-normal mt-0.5">${[item.cambio, item.combustivel].filter(Boolean).join(' · ')}</span>` : ''}
           </td>
           <td class="py-3 px-5 text-gray-300">${item.ano || '-'}</td>
           <td class="py-3 px-5 text-gray-300 font-mono">${kmFormatado}</td>
@@ -820,6 +848,8 @@
       document.getElementById('fieldAno').value = item.ano || '';
       document.getElementById('fieldPreco').value = item.preco || '';
       document.getElementById('fieldKm').value = item.km || '';
+      document.getElementById('fieldCambio').value = item.cambio || '';
+      document.getElementById('fieldCombustivel').value = item.combustivel || '';
       document.getElementById('fieldStatus').value = item.status || 'Disponível';
       document.getElementById('fieldDescricao').value = item.descricao || item.opcionais || '';
       document.getElementById('veiculoModalTitle').textContent = `Editar ${item.modelo}`;
@@ -951,6 +981,15 @@
         const km = parseInt(document.getElementById('fieldKm').value) || 0;
         const status = document.getElementById('fieldStatus').value;
         const descricao = document.getElementById('fieldDescricao').value.trim();
+        const cambio = document.getElementById('fieldCambio').value;
+        const combustivel = document.getElementById('fieldCombustivel').value;
+
+        // Mesmo motivo do ano acima: return em vez de throw. Antes do upload para
+        // não gastar Storage num salvamento que vai parar aqui.
+        if (!cambio || !combustivel) {
+          showToast("Selecione o câmbio e o combustível do veículo", "error");
+          return;
+        }
 
         if (arquivosNovosParaUpload.length > 0) {
           showToast(`Enviando ${arquivosNovosParaUpload.length} foto(s) para o Supabase Storage...`, "info");
@@ -974,6 +1013,8 @@
           modelo,
           versao,
           ano: anoFormatado,
+          cambio,
+          combustivel,
           preco,
           km,
           status,
