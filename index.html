@@ -1016,7 +1016,7 @@
     // Filters
     function getFiltered(){
       const s=document.getElementById('searchInput').value.toLowerCase().trim(),c=document.getElementById('filterCategory').value,b=document.getElementById('filterBrand').value,o=document.getElementById('sortOrder').value;
-      let f=vehicles.filter(v=>{const ms=!s||v.name.toLowerCase().includes(s)||v.brand.toLowerCase().includes(s);const mc=c==='todos'||v.category===c;const mb=b==='todas'||v.brand===b;return ms&&mc&&mb;});
+      let f=vehicles.filter(v=>{const ms=!s||v.name.toLowerCase().includes(s)||v.brand.toLowerCase().includes(s);const mc=c==='todos'||(c==='blindados'?(v.blindado===true||v.category==='blindados'):v.category===c);const mb=b==='todas'||v.brand===b;return ms&&mc&&mb;});
       switch(o){case'price-asc':f.sort((a,b)=>a.price-b.price);break;case'price-desc':f.sort((a,b)=>b.price-a.price);break;case'year-desc':f.sort((a,b)=>b.year-a.year);break;case'year-asc':f.sort((a,b)=>a.year-b.year);break;}
       return f;
     }
@@ -1151,6 +1151,7 @@
               km: typeof item.km === 'number' ? item.km.toLocaleString('pt-BR') + ' km' : (item.km || '0 km'),
               transmission: item.cambio || 'Automático',
               fuel: item.combustivel || 'Gasolina',
+              blindado: item.blindado === true,
               price: parseFloat(item.preco) || 0,
               badge: item.status || 'Disponível',
               badgeColor: item.status === 'Vendido' ? 'from-red-500/20 to-red-600/10 border-red-500/30 text-red-300' : (item.status === 'Reservado' ? 'from-gold/20 to-goldDark/10 border-gold/30 text-gold' : 'from-emerald-500/20 to-emerald-600/10 border-emerald-500/30 text-emerald-300'),
