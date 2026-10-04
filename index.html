@@ -232,6 +232,61 @@
     .vehicle-img-wrapper img { transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
     .vehicle-img-wrapper:hover img { transform: scale(1.08); }
 
+    /* Vehicle Carousel (Estoque Horizontal) */
+    .vehicle-carousel {
+      display: flex;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE e Edge */
+      padding-top: 0.5rem;
+      padding-bottom: 1.5rem;
+    }
+    .vehicle-carousel::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Opera */
+    }
+
+    .vehicle-carousel .vehicle-card {
+      flex: 0 0 85vw;
+      width: 85vw;
+      max-width: 85vw;
+      scroll-snap-align: start;
+    }
+
+    .vehicle-carousel::after {
+      content: '';
+      flex: 0 0 1rem;
+      width: 1rem;
+    }
+
+    @media (max-width: 639px) {
+      .vehicle-carousel {
+        margin-left: -1rem;
+        margin-right: -1rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+    }
+
+    @media (min-width: 640px) {
+      .vehicle-carousel .vehicle-card {
+        flex: 0 0 350px;
+        width: 350px;
+        max-width: 350px;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .vehicle-carousel .vehicle-card {
+        flex: 0 0 380px;
+        width: 380px;
+        max-width: 380px;
+      }
+    }
+
     /* Star rating */
     .star-filled { color: #C5A059; }
 
@@ -492,8 +547,24 @@
         </div>
       </div>
 
-      <!-- Vehicle Grid -->
-      <div id="vehicleGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+      <!-- Carousel Navigation Controls -->
+      <div id="carouselControls" class="flex items-center justify-between mb-4 px-1 reveal">
+        <div class="flex items-center gap-2 text-xs text-gray-400">
+          <svg class="w-4 h-4 text-gold animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          <span class="tracking-wider uppercase font-medium">Arraste para o lado para explorar</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="carouselPrevBtn" type="button" aria-label="Veículo anterior" class="w-9 h-9 rounded-full border border-titaniumLight bg-piano/90 text-gray-300 hover:text-gold hover:border-gold/50 transition-all flex items-center justify-center cursor-pointer shadow-lg active:scale-95">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <button id="carouselNextBtn" type="button" aria-label="Próximo veículo" class="w-9 h-9 rounded-full border border-titaniumLight bg-piano/90 text-gray-300 hover:text-gold hover:border-gold/50 transition-all flex items-center justify-center cursor-pointer shadow-lg active:scale-95">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Vehicle Carousel -->
+      <div id="vehicleGrid" class="vehicle-carousel flex gap-6 overflow-x-auto pb-4 pt-1 cursor-grab active:cursor-grabbing"></div>
 
       <!-- No results -->
       <div id="noResults" class="hidden text-center py-16">
@@ -980,7 +1051,10 @@
     ];
 
     // Helpers
-    function formatPrice(p){ return p.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0}); }
+    function formatPrice(p){
+      const num = typeof p === 'number' ? p : parseFloat(p) || 0;
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
+    }
 
     function createVehicleCard(v){
       const msg=encodeURIComponent(`Olá! Tenho interesse no ${v.name} ${v.year} anunciado no site da Invictto Motors. Gostaria de mais informações.`);
@@ -1007,10 +1081,26 @@
     }
 
     function renderVehicles(list){
-      const grid=document.getElementById('vehicleGrid'),nr=document.getElementById('noResults'),fs=document.getElementById('filterStatus'),fc=document.getElementById('filterCount');
-      if(!list.length){grid.innerHTML='';nr.classList.remove('hidden');fs.classList.add('hidden');return;}
-      nr.classList.add('hidden');grid.innerHTML=list.map(v=>createVehicleCard(v)).join('');fs.classList.remove('hidden');fc.textContent=list.length;
-      requestAnimationFrame(()=>{document.querySelectorAll('.vehicle-card.reveal').forEach((el,i)=>{setTimeout(()=>el.classList.add('visible'),i*100);});});
+      const grid=document.getElementById('vehicleGrid'),nr=document.getElementById('noResults'),fs=document.getElementById('filterStatus'),fc=document.getElementById('filterCount'),ctrl=document.getElementById('carouselControls');
+      if(!list.length){
+        grid.innerHTML='';
+        nr.classList.remove('hidden');
+        fs.classList.add('hidden');
+        if(ctrl) ctrl.classList.add('hidden');
+        return;
+      }
+      nr.classList.add('hidden');
+      if(ctrl) ctrl.classList.remove('hidden');
+      grid.innerHTML=list.map(v=>createVehicleCard(v)).join('');
+      fs.classList.remove('hidden');
+      fc.textContent=list.length;
+      grid.scrollLeft = 0;
+      requestAnimationFrame(()=>{
+        document.querySelectorAll('.vehicle-card.reveal').forEach((el,i)=>{
+          setTimeout(()=>el.classList.add('visible'), Math.min(i*60, 400));
+        });
+        if(typeof observeReveals === 'function') observeReveals();
+      });
     }
 
     // Filters
@@ -1178,8 +1268,70 @@
       renderVehicles(vehicles);
     }
 
+    function setupVehicleCarousel() {
+      const grid = document.getElementById('vehicleGrid');
+      const prevBtn = document.getElementById('carouselPrevBtn');
+      const nextBtn = document.getElementById('carouselNextBtn');
+      if (!grid) return;
+
+      if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+          const card = grid.querySelector('.vehicle-card');
+          const step = card ? (card.offsetWidth + 24) : 380;
+          grid.scrollBy({ left: -step, behavior: 'smooth' });
+        });
+      }
+
+      if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+          const card = grid.querySelector('.vehicle-card');
+          const step = card ? (card.offsetWidth + 24) : 380;
+          grid.scrollBy({ left: step, behavior: 'smooth' });
+        });
+      }
+
+      // Drag to scroll no desktop
+      let isMouseDown = false;
+      let startX = 0;
+      let scrollStart = 0;
+      let hasDragged = false;
+
+      grid.addEventListener('mousedown', (e) => {
+        if (e.button !== 0 || e.target.closest('button, a, input, select')) return;
+        isMouseDown = true;
+        hasDragged = false;
+        startX = e.pageX - grid.offsetLeft;
+        scrollStart = grid.scrollLeft;
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (isMouseDown) {
+          isMouseDown = false;
+          setTimeout(() => { hasDragged = false; }, 80);
+        }
+      });
+
+      grid.addEventListener('mousemove', (e) => {
+        if (!isMouseDown) return;
+        const x = e.pageX - grid.offsetLeft;
+        const walk = x - startX;
+        if (Math.abs(walk) > 5) {
+          hasDragged = true;
+          grid.scrollLeft = scrollStart - walk;
+        }
+      });
+
+      grid.addEventListener('click', (e) => {
+        if (hasDragged) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }, true);
+    }
+
     // Init
     document.addEventListener('DOMContentLoaded', async () => {
+      setupVehicleCarousel();
       await carregarVeiculosPublicos();
       renderReviews();
       observeReveals();
