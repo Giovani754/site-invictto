@@ -115,9 +115,47 @@ async function fetchVeiculos() {
   return data || [];
 }
 
-async function uploadFotoVeiculo(file) {
-  if (!supabaseClient || !file) return null;
-  
+// Comprime a foto no navegador antes do upload (lado maior 1600px, JPEG 0.82).
+// Nunca bloqueia o upload: em qualquer falha devolve o arquivo original.
+async function comprimirImagem(file) {
+  const LIMITE_BYTES = 400 * 1024;
+  const LADO_MAXIMO = 1600;
+  const QUALIDADE = 0.82;
+
+  if (file.size < LIMITE_BYTES) return file;
+
+  try {
+    const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+    const escala = Math.min(1, LADO_MAXIMO / Math.max(bitmap.width, bitmap.height));
+    const largura = Math.round(bitmap.width * escala);
+    const altura = Math.round(bitmap.height * escala);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = largura;
+    canvas.height = altura;
+    const ctx = canvas.getContext('2d');
+    // JPEG não tem transparência: sem fundo branco, PNG com alfa ficaria preto.
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, largura, altura);
+    ctx.drawImage(bitmap, 0, 0, largura, altura);
+    bitmap.close();
+
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', QUALIDADE));
+    if (!blob) throw new Error('canvas.toBlob não gerou imagem.');
+    if (blob.size >= file.size) return file;
+
+    const nome = file.name.replace(/\.[^.]+$/, '') + '.jpg';
+    return new File([blob], nome, { type: 'image/jpeg', lastModified: Date.now() });
+  } catch (err) {
+    console.warn('Compressão da imagem falhou, enviando o original:', err);
+    return file;
+  }
+}
+
+async function uploadFotoVeiculo(originalFile) {
+  if (!supabaseClient || !originalFile) return null;
+
+  const file = await comprimirImagem(originalFile);
   const fileExt = file.name.split('.').pop();
   const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
   const filePath = `estoque/${fileName}`;
