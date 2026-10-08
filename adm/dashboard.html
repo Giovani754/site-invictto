@@ -633,12 +633,12 @@
     let arquivosNovosParaUpload = [];
 
     const veiculosIniciaisFallback = [
-      { id: 'f1', marca: 'Porsche', modelo: '911 Carrera S', versao: 'Carrera S 3.0 Biturbo PDK', cambio: 'Automatizado', combustivel: 'Gasolina', ano: '2023 / 2023', preco: 980000, km: 4200, status: 'Disponível', foto_url: 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=600&q=80' },
-      { id: 'f2', marca: 'BMW', modelo: 'M3 Competition 3.0', versao: 'Competition M xDrive', cambio: 'Automático', combustivel: 'Gasolina', ano: '2022 / 2023', preco: 749000, km: 8900, status: 'Disponível', foto_url: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=600&q=80' },
-      { id: 'f3', marca: 'Mercedes-AMG', modelo: 'G63 V8 Biturbo', versao: 'AMG 4.0 V8 Biturbo 585cv', cambio: 'Automático', combustivel: 'Gasolina', ano: '2021 / 2021', preco: 1650000, km: 15400, status: 'Reservado', foto_url: 'https://images.unsplash.com/photo-1520050206274-a1ae44613e6d?auto=format&fit=crop&w=600&q=80' },
-      { id: 'f4', marca: 'Audi', modelo: 'RS6 Avant 4.0 V8', versao: 'Avant Performance 4.0 V8 quattro', cambio: 'Automático', combustivel: 'Gasolina', ano: '2023 / 2024', preco: 1120000, km: 2100, status: 'Disponível', foto_url: 'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?auto=format&fit=crop&w=600&q=80' },
-      { id: 'f5', marca: 'Land Rover', modelo: 'Defender 110 HSE', versao: '110 HSE D300 3.0 Diesel', cambio: 'Automático', combustivel: 'Diesel', ano: '2023 / 2023', preco: 689000, km: 11200, status: 'Disponível', foto_url: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80' },
-      { id: 'f6', marca: 'Porsche', modelo: 'Taycan Turbo S', versao: 'Turbo S Performance Plus 761cv', cambio: 'Automático', combustivel: 'Elétrico', ano: '2022 / 2022', preco: 890000, km: 6800, status: 'Vendido', foto_url: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=600&q=80' }
+      { id: 'f1', marca: 'Porsche', modelo: '911 Carrera S', versao: 'Carrera S 3.0 Biturbo PDK', cambio: 'Automatizado', combustivel: 'Gasolina', blindado: false, ano: '2023 / 2023', preco: 980000, km: 4200, status: 'Disponível', foto_url: 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=600&q=80' },
+      { id: 'f2', marca: 'BMW', modelo: 'M3 Competition 3.0', versao: 'Competition M xDrive', cambio: 'Automático', combustivel: 'Gasolina', blindado: false, ano: '2022 / 2023', preco: 749000, km: 8900, status: 'Disponível', foto_url: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=600&q=80' },
+      { id: 'f3', marca: 'Mercedes-AMG', modelo: 'G63 V8 Biturbo', versao: 'AMG 4.0 V8 Biturbo 585cv', cambio: 'Automático', combustivel: 'Gasolina', blindado: false, ano: '2021 / 2021', preco: 1650000, km: 15400, status: 'Reservado', foto_url: 'https://images.unsplash.com/photo-1520050206274-a1ae44613e6d?auto=format&fit=crop&w=600&q=80' },
+      { id: 'f4', marca: 'Audi', modelo: 'RS6 Avant 4.0 V8', versao: 'Avant Performance 4.0 V8 quattro', cambio: 'Automático', combustivel: 'Gasolina', blindado: false, ano: '2023 / 2024', preco: 1120000, km: 2100, status: 'Disponível', foto_url: 'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?auto=format&fit=crop&w=600&q=80' },
+      { id: 'f5', marca: 'Land Rover', modelo: 'Defender 110 HSE', versao: '110 HSE D300 3.0 Diesel', cambio: 'Automático', combustivel: 'Diesel', blindado: false, ano: '2023 / 2023', preco: 689000, km: 11200, status: 'Disponível', foto_url: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80' },
+      { id: 'f6', marca: 'Porsche', modelo: 'Taycan Turbo S', versao: 'Turbo S Performance Plus 761cv', cambio: 'Automático', combustivel: 'Elétrico', blindado: false, ano: '2022 / 2022', preco: 890000, km: 6800, status: 'Vendido', foto_url: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=600&q=80' }
     ];
 
     const equipeInicialFallback = [
@@ -874,7 +874,7 @@
       galeria.forEach(url => {
         fotosModalVeiculo.push({
           url: url,
-          isCover: url === coverUrl || fotosModalVeiculo.length === 0
+          isCover: url === coverUrl
         });
       });
 
@@ -911,6 +911,13 @@
       });
     }
 
+    // Garante exatamente uma capa: mantém a primeira marcada; se nenhuma, usa o índice 0.
+    function normalizarCapaFotos() {
+      const idx = fotosModalVeiculo.findIndex(f => f.isCover);
+      const capa = idx === -1 ? 0 : idx;
+      fotosModalVeiculo.forEach((f, i) => { f.isCover = i === capa; });
+    }
+
     function setCoverFotoIndex(index) {
       fotosModalVeiculo.forEach((f, i) => {
         f.isCover = i === index;
@@ -920,12 +927,8 @@
     }
 
     function removeFotoFromGrid(index) {
-      const wasCover = fotosModalVeiculo[index].isCover;
       fotosModalVeiculo.splice(index, 1);
-
-      if (wasCover && fotosModalVeiculo.length > 0) {
-        fotosModalVeiculo[0].isCover = true;
-      }
+      normalizarCapaFotos();
       renderFotosPreviewGrid();
     }
 
@@ -1018,6 +1021,7 @@
           }
         }
 
+        normalizarCapaFotos();
         const allUrls = fotosModalVeiculo.map(f => f.url);
         const coverObj = fotosModalVeiculo.find(f => f.isCover) || fotosModalVeiculo[0];
         const coverUrl = coverObj ? coverObj.url : 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=600&q=80';
